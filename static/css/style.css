@@ -1,0 +1,672 @@
+/* Trueque Digital - 单页面应用样式 */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: #F5F5F5;
+    color: #333;
+    overflow-x: hidden;
+}
+
+.main-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 头部 */
+.app-header {
+    background: #FFFFFF;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2C5F2D;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.btn-icon:hover {
+    background: #F5F5F5;
+}
+
+/* 主内容区 */
+.content-area {
+    flex: 1;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* 主卡片容器 */
+.main-card-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 主卡片 */
+.main-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    position: relative;
+    min-height: 600px;
+}
+
+/* 用户信息 */
+.user-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.user-stats {
+    font-size: 12px;
+    color: #999;
+}
+
+/* 评分 */
+.rating {
+    margin-bottom: 20px;
+}
+
+.star {
+    font-size: 20px;
+    margin-right: 4px;
+}
+
+/* 书籍封面 */
+.book-cover-large {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto 20px;
+    position: relative;
+    aspect-ratio: 2/3;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.book-cover-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.condition-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(44, 95, 45, 0.9);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* 文本内容 */
+.book-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.content-field {
+    background: #F9F9F9;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #2C5F2D;
+}
+
+.field-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2C5F2D;
+    margin-bottom: 8px;
+}
+
+.field-text {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* 导航箭头 */
+.nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.9);
+    border: 1px solid #E0E0E0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    z-index: 10;
+}
+
+.nav-arrow:hover {
+    background: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.nav-arrow.left {
+    left: 15px;
+}
+
+.nav-arrow.right {
+    right: 15px;
+}
+
+/* 操作区域 */
+.action-section {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.want-count {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-primary {
+    flex: 1;
+    background: #2C5F2D;
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background: #4A7C59;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(44, 95, 45, 0.3);
+}
+
+.btn-secondary {
+    flex: 1;
+    background: #F5F5F5;
+    color: #666;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background: #E0E0E0;
+}
+
+/* 交换墙 */
+.exchange-wall-section {
+    width: 300px;
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    height: fit-content;
+    position: sticky;
+    top: 80px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.exchange-wall-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.exchange-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #F9F9F9;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.exchange-user {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 50px;
+}
+
+.exchange-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #E0E0E0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.exchange-name {
+    font-size: 10px;
+    color: #999;
+}
+
+.exchange-book-cover {
+    width: 40px;
+    height: 60px;
+    background: #E0E0E0;
+    border-radius: 4px;
+    flex: 1;
+}
+
+.exchange-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 60px;
+}
+
+.exchange-icon {
+    font-size: 20px;
+    color: #2C5F2D;
+}
+
+.exchange-text {
+    font-size: 10px;
+    color: #2C5F2D;
+    font-weight: 600;
+}
+
+/* 底部操作 */
+.bottom-action {
+    background: #FFFFFF;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+}
+
+.action-text {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.btn-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #2C5F2D;
+    color: white;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(44, 95, 45, 0.3);
+    transition: all 0.3s;
+}
+
+.btn-circle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(44, 95, 45, 0.4);
+}
+
+/* 模态框 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #FFFFFF;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideUp 0.3s;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.modal-close:hover {
+    background: #F5F5F5;
+    color: #333;
+}
+
+.modal-header {
+    padding: 24px 24px 0;
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    padding: 0 24px 24px;
+    display: flex;
+    gap: 12px;
+}
+
+/* 表单 */
+.form-section {
+    margin-bottom: 24px;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border 0.3s;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: #2C5F2D;
+}
+
+/* 图片上传 */
+.image-upload-area {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.upload-placeholder {
+    width: 100%;
+    aspect-ratio: 4/3;
+    border: 2px dashed #E0E0E0;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #FAFAFA;
+}
+
+.upload-placeholder:hover {
+    border-color: #2C5F2D;
+    background: #F5F5F5;
+}
+
+.upload-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.upload-text {
+    font-size: 14px;
+    color: #999;
+}
+
+.uploaded-images {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.uploaded-image {
+    position: relative;
+    aspect-ratio: 4/3;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.uploaded-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.uploaded-image .remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* 书籍选择器 */
+.book-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.book-option {
+    aspect-ratio: 2/3;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.book-option:hover {
+    border-color: #2C5F2D;
+    transform: translateY(-2px);
+}
+
+.book-option.selected {
+    border-color: #2C5F2D;
+    box-shadow: 0 0 0 3px rgba(44, 95, 45, 0.2);
+}
+
+.book-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.book-option .check {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #2C5F2D;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.book-option.selected .check {
+    display: flex;
+}
+
+/* 响应式 */
+@media (max-width: 1024px) {
+    .content-area {
+        flex-direction: column;
+    }
+    
+    .exchange-wall-section {
+        width: 100%;
+        position: relative;
+        top: 0;
+    }
+    
+    .exchange-wall-scroll {
+        flex-direction: row;
+        overflow-x: auto;
+        max-height: none;
+    }
+    
+    .exchange-item {
+        min-width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-area {
+        padding: 10px;
+    }
+    
+    .main-card {
+        padding: 20px;
+        min-height: auto;
+    }
+    
+    .nav-arrow {
+        display: none;
+    }
+    
+    .book-cover-large {
+        max-width: 200px;
+    }
+}

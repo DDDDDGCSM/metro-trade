@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Mural del Trueque - Trueque Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Trueque Digital</div>
+            <ul class="nav-links">
+                <li><a href="/">Plaza de Libros</a></li>
+                <li><a href="/exchange-wall">El Mural del Trueque</a></li>
+                <li><a href="#mi-estanteria">Mi Estantería</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="plaza-header">
+            <h1>El Mural del Trueque</h1>
+            <p>Historias de intercambios exitosos en nuestra comunidad</p>
+        </div>
+
+        <div class="exchange-wall">
+            {% for exchange in exchanges %}
+            <div class="exchange-card">
+                <div class="exchange-books">
+                    <div class="exchange-book">
+                        <img src="{{ exchange.book1.cover }}" alt="{{ exchange.book1.title }}">
+                        <p style="margin-top: 10px; font-weight: 600; font-size: 14px;">{{ exchange.book1.title }}</p>
+                        <p style="font-size: 12px; color: var(--color-text-light);">{{ exchange.book1.user }}</p>
+                    </div>
+                    <div class="exchange-icon">🤝</div>
+                    <div class="exchange-book">
+                        <img src="{{ exchange.book2.cover }}" alt="{{ exchange.book2.title }}">
+                        <p style="margin-top: 10px; font-weight: 600; font-size: 14px;">{{ exchange.book2.title }}</p>
+                        <p style="font-size: 12px; color: var(--color-text-light);">{{ exchange.book2.user }}</p>
+                    </div>
+                </div>
+                
+                <div class="exchange-message">
+                    <p style="margin-bottom: 10px;"><strong>{{ exchange.book1.user }}:</strong> "{{ exchange.message1 }}"</p>
+                    <p><strong>{{ exchange.book2.user }}:</strong> "{{ exchange.message2 }}"</p>
+                </div>
+                
+                <div class="exchange-date">
+                    {{ exchange.date }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 空状态 -->
+        {% if not exchanges %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🤝</div>
+            <h3>Aún no hay intercambios</h3>
+            <p>¡Sé el primero en iniciar un diálogo a través de los libros!</p>
+            <a href="/" style="display: inline-block; margin-top: 20px; padding: 12px 30px; background: var(--color-primary); color: white; text-decoration: none; border-radius: 25px;">
+                Explorar Libros
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/exchange_wall.js') }}"></script>
+</body>
+</html>
+

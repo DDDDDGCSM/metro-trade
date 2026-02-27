@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metro Trade - Trueque en el Metro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(165deg, #F5E6D3 0%, #E8D5B7 50%, #D4B896 100%);
+            color: #2C1810;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+        .page { display: none; }
+        .page.active { display: block; }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 12px 16px;
+        }
+        .header {
+            background: linear-gradient(135deg, #5D2E0C 0%, #8B4513 30%, #A0522D 60%, #6D4C41 100%);
+            color: #FFF8F0;
+            border-radius: 20px;
+            padding: 24px 20px 24px 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 8px 32px rgba(93,46,12,0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #F4D03F, #E67E22, #F4D03F);
+            opacity: 0.9;
+        }
+        .lang-switch {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            display: flex;
+            gap: 2px;
+            background: rgba(0,0,0,0.2);
+            padding: 4px 6px;
+            border-radius: 10px;
+            z-index: 2;
+        }
+        .lang-switch button {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: rgba(255,248,240,0.9);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .lang-switch button:hover {
+            background: rgba(255,255,255,0.15);
+            color: #FFF8F0;
+        }
+        .lang-switch button.active {
+            background: #FFF8F0;
+            color: #6D4C41;
+        }
+        .header-inner {
+            position: relative;
+            z-index: 1;
+            padding-right: 72px;
+        }
+        .header-left .badge {
+            display: inline-block;
+            background: rgba(255,248,240,0.25);
+            color: #FFF8F0;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+        }
+        .header-left h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.2;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .header-left p {
+            font-size: 15px;
+            opacity: 0.98;
+            max-width: 420px;
+        }
+        .metro-strip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, rgba(139,69,19,0.08), rgba(244,208,63,0.15), rgba(230,126,34,0.12), rgba(244,208,63,0.15), rgba(139,69,19,0.08));
+            border-radius: 14px;
+            flex-wrap: wrap;
+            font-size: 22px;
+            line-height: 1;
+        }
+        .metro-strip span {
+            opacity: 0.95;
+        }
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: linear-gradient(180deg, #FFF8F0 0%, #F5E6D3 100%);
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 9998;
+            isolation: isolate;
+            overflow: visible;
+        }
+        .bottom-bar .nav-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 90px;
+        }
+        .bottom-bar .nav-wrap.left { justify-content: flex-start; }
+        .bottom-bar .nav-wrap.right { justify-content: flex-end; }
+        .bottom-bar .center {
+            position: absolute;
+            left: 50%;
+            bottom: 14px;
+            transform: translateX(-50%);
+            z-index: 9999;
+            pointer-events: auto;
+        }
+        .btn-publish {
+            min-width: 88px;
+            height: 56px;
+            padding: 0 24px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(180deg, #F4D03F 0%, #E67E22 100%);
+            color: #1a0f0a;
+            cursor: pointer;
+            box-shadow: 0 6px 28px rgba(230,126,34,0.5), 0 0 0 4px rgba(255,248,240,0.9);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .btn-publish:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 32px rgba(230,126,34,0.55), 0 0 0 4px rgba(255,248,240,0.95);
+        }
+        .btn-publish:active {
+            transform: scale(1.02);
+        }
+        .btn-publish .btn-publish-text {
+            font-family: 'Outfit', -apple-system, sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .btn-nav {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            color: #5D4E37;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn-nav .icon { font-size: 22px; }
+        .btn-nav:hover {
+            background: rgba(139,69,19,0.08);
+            color: #2C1810;
+        }
+        .btn-nav.active {
+            color: #8B4513;
+        }
+        .tabs-wrap {
+            background: #FFF;
+            border-radius: 14px;
+            padding: 10px 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .tabs {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 6px;
+            min-width: min-content;
+        }
+        .tab {
+            flex-shrink: 0;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 2px solid #E8D5B7;
+            background: #FFFBF5;
+            color: #5D4E37;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .tab:hover {
+            border-color: #C4A574;
+            background: #F5E6D3;
+        }
+        .tab.active {
+            border-color: #8B4513;
+            background: linear-gradient(180deg, #A0522D, #8B4513);
+            color: #FFF;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .product-card {
+            background: #FFF;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #E8D5B7;
+            position: relative;
+            z-index: 0;
+        }
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139,69,19,0.15);
+        }
+        .product-image-wrap {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #F5E6D3;
+            overflow: hidden;
+            position: relative;
+        }
+        .product-body-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .product-body-top .product-price {
+            margin-bottom: 0;
+        }
+        .heart-btn {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 2px solid #c0392b;
+            background: #fff;
+            color: #c0392b;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s, color 0.2s, border-color 0.2s;
+            font-family: inherit;
+        }
+        .heart-btn .heart-icon { font-size: 16px; line-height: 1; }
+        .heart-btn:hover {
+            transform: scale(1.05);
+            background: #ffe5e5;
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+        .heart-btn.faved {
+            background: #e74c3c;
+            color: #fff;
+            border-color: #e74c3c;
+        }
+        .heart-btn.faved:hover {
+            background: #c0392b;
+            border-color: #c0392b;
+        }
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .product-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #A0522D;
+            font-size: 48px;
+        }
+        .product-body {
+            padding: 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .product-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #8B4513;
+            margin-bottom: 6px;
+        }
+        .product-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 6px;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .product-desc {
+            font-size: 13px;
+            color: #5D4E37;
+            margin-bottom: 12px;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            white-space: pre-wrap;
+        }
+        .contact-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: #FFF;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s, transform 0.1s;
+            font-family: inherit;
+        }
+        .contact-btn:hover {
+            opacity: 0.95;
+            transform: scale(1.02);
+        }
+        .contact-btn:active {
+            transform: scale(0.98);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            background: #FFF;
+            border-radius: 14px;
+            border: 2px dashed #E8D5B7;
+            color: #6D4C41;
+            font-size: 15px;
+        }
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+        .loading {
+            text-align: center;
+            padding: 32px;
+            color: #6D4C41;
+            font-size: 14px;
+        }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10002;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal {
+            background: #FFF;
+            border-radius: 20px;
+            max-width: 440px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            padding: 20px 20px 12px;
+            border-bottom: 1px solid #E8D5B7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header h2 {
+            font-size: 20px;
+            color: #2C1810;
+        }
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: #F5E6D3;
+            border-radius: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #5D4E37;
+        }
+        .modal-body {
+            padding: 16px 20px 24px;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2C1810;
+            margin-bottom: 4px;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #E8D5B7;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #8B4513;
+        }
+        .metro-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+        }
+        .metro-checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .metro-checkboxes input {
+            width: auto;
+        }
+        .image-upload {
+            border: 2px dashed #E8D5B7;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #FFFBF5;
+        }
+        .image-upload:hover {
+            border-color: #8B4513;
+            background: #F5E6D3;
+        }
+        .image-upload.has-image {
+            padding: 8px;
+        }
+        .image-upload img {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 8px;
+        }
+        .modal-submit {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: #FFF;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            font-family: inherit;
+        }
+        .modal-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .toast {
+            position: fixed;
+            bottom: 96px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2C1810;
+            color: #FFF;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            display: none;
+            z-index: 10003;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+        .my-section {
+            margin-bottom: 24px;
+        }
+        .my-section h3 {
+            font-size: 16px;
+            color: #8B4513;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #E8D5B7;
+        }
+        .my-section .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        }
+        .my-section .empty-tip {
+            padding: 20px;
+            text-align: center;
+            color: #6D4C41;
+            font-size: 14px;
+        }
+        #myPage .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2C1810;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="mainPage" class="page active">
+        <div class="container">
+            <header class="header">
+                <div class="lang-switch">
+                    <button type="button" id="langEs" class="active" aria-label="Español">ES</button>
+                    <button type="button" id="langEn" aria-label="English">EN</button>
+                </div>
+                <div class="header-inner">
+                    <div class="header-left">
+                        <span class="badge" data-i18n="badge">Compra · Cambia · Vende</span>
+                        <h1 data-i18n="title">Filtra por estación, queda en el andén.</h1>
+                        <p data-i18n="subtitle">La segunda mano, simplificada.</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="metro-strip" aria-hidden="true">
+                <span>🚇</span><span>🚃</span><span>🚉</span><span>🛒</span><span>💬</span><span>📦</span><span>🔄</span><span>🚇</span><span>🚃</span><span>🚉</span>
+            </div>
+
+            <div class="tabs-wrap">
+                <div class="tabs" id="metroTabs"></div>
+            </div>
+
+            <div id="productArea">
+                <div class="loading" id="loadingState" data-i18n="loading">Cargando...</div>
+                <div class="products-grid" id="productsGrid" style="display: none;"></div>
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="icon">📭</div>
+                    <p data-i18n="empty">No hay productos en esta línea por ahora.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myPage" class="page">
+        <div class="container">
+            <header class="header">
+                <div class="lang-switch">
+                    <button type="button" id="langEsMy" class="active" aria-label="Español">ES</button>
+                    <button type="button" id="langEnMy" aria-label="English">EN</button>
+                </div>
+                <div class="header-inner">
+                    <div class="header-left">
+                        <h1 class="page-title" data-i18n="myTab">Mi</h1>
+                    </div>
+                </div>
+            </header>
+            <div class="my-section">
+                <h3 data-i18n="myListings">Mis publicaciones</h3>
+                <div id="myListingsGrid" class="products-grid"></div>
+                <div id="myListingsEmpty" class="empty-tip" style="display:none;" data-i18n="noListings">Aún no has publicado nada.</div>
+            </div>
+            <div class="my-section">
+                <h3 data-i18n="myFavorites">Mis favoritos</h3>
+                <div id="myFavoritesGrid" class="products-grid"></div>
+                <div id="myFavoritesEmpty" class="empty-tip" style="display:none;" data-i18n="noFavorites">Aún no tienes favoritos.</div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-bar" aria-label="">
+        <div class="nav-wrap left">
+            <button type="button" class="btn-nav active" id="btnNavMarket" data-page="main">
+                <span class="icon">🏪</span>
+                <span data-i18n="navMarket">Mercado</span>
+            </button>
+        </div>
+        <div class="center">
+            <button type="button" class="btn-publish" id="btnPublish" title=""><span class="btn-publish-text" data-i18n="sellBtn">Vender</span></button>
+        </div>
+        <div class="nav-wrap right">
+            <button type="button" class="btn-nav" id="btnNavMy" data-page="my">
+                <span class="icon">👤</span>
+                <span data-i18n="myTab">Mi</span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="modal-overlay" id="publishModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 data-i18n="modalTitle">Publicar producto</h2>
+                <button type="button" class="modal-close" id="modalClose" aria-label="">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="publishForm">
+                    <div class="form-group">
+                        <label data-i18n="labelTitle">Título / Nombre del producto *</label>
+                        <input type="text" id="pTitle" required maxlength="200" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="labelDesc">Descripción</label>
+                        <textarea id="pDesc" maxlength="2000" placeholder=""></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="labelPrice">Precio (número o 0 = gratis)</label>
+                        <input type="text" id="pPrice" maxlength="20" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="labelMetro">Líneas donde puedes entregar *</label>
+                        <div class="metro-checkboxes" id="metroCheckboxes"></div>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="labelImage">Foto del producto *</label>
+                        <div class="image-upload" id="imageUploadArea">
+                            <div id="imageUploadPlaceholder">📷 <span data-i18n="imageHint">Toca para subir una foto</span></div>
+                            <img id="imagePreview" style="display:none; margin:0 auto;" alt="">
+                        </div>
+                        <input type="file" id="imageInput" accept="image/*" style="display:none">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="labelContact">Enlace de contacto (WhatsApp / Messenger) *</label>
+                        <input type="url" id="pContact" placeholder="" required>
+                    </div>
+                    <button type="submit" class="modal-submit" id="publishSubmit" data-i18n="submitPublish">Publicar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const METRO_LINES = {{ metro_lines | tojson }};
+
+        const i18n = {
+            es: {
+                title: 'Filtra por estación, queda en el andén.',
+                subtitle: 'La segunda mano, simplificada.',
+                badge: 'Compra · Cambia · Vende',
+                publishBtn: 'Publicar',
+                tabAll: 'Todos',
+                linePrefix: 'Línea ',
+                contactMe: 'Contáctame',
+                loading: 'Cargando...',
+                empty: 'No hay productos en esta línea por ahora.',
+                priceFree: 'Gratis',
+                priceLabel: '$',
+                modalTitle: 'Publicar producto',
+                labelTitle: 'Título / Nombre del producto *',
+                labelDesc: 'Descripción',
+                labelPrice: 'Precio (número o 0 = gratis)',
+                labelMetro: 'Líneas donde puedes entregar *',
+                labelImage: 'Foto del producto *',
+                imageHint: 'Toca para subir una foto',
+                labelContact: 'Enlace de contacto (WhatsApp / Messenger) *',
+                submitPublish: 'Publicar',
+                publishSuccess: '¡Listo! Ya aparece en las líneas elegidas.',
+                publishError: 'Error al publicar. Revisa los campos.',
+                navMarket: 'Mercado',
+                myTab: 'Mi',
+                myListings: 'Mis publicaciones',
+                myFavorites: 'Mis favoritos',
+                noListings: 'Aún no has publicado nada.',
+                noFavorites: 'Aún no tienes favoritos.',
+                labelFav: 'Guardar',
+                labelFaved: 'Guardado',
+                ariaLabelRemoveFav: 'Quitar favorito',
+                ariaLabelAddFav: 'Añadir a favoritos',
+                modalClose: 'Cerrar',
+                placeholderTitle: 'Ej. iPhone 12',
+                placeholderDesc: 'Detalles, estado, etc.',
+                placeholderContact: 'https://wa.me/52...',
+                navAria: 'Navegación',
+                publishBtnTitle: 'Publicar',
+                sellBtn: 'Vender'
+            },
+            en: {
+                title: 'Filter by station, meet at the platform.',
+                subtitle: 'Second-hand made simple.',
+                badge: 'Buy · Swap · Sell',
+                publishBtn: 'Publish',
+                tabAll: 'All',
+                linePrefix: 'Line ',
+                contactMe: 'Contact me',
+                loading: 'Loading...',
+                empty: 'No products on this line right now.',
+                priceFree: 'Free',
+                priceLabel: '$',
+                modalTitle: 'Publish product',
+                labelTitle: 'Title / Product name *',
+                labelDesc: 'Description',
+                labelPrice: 'Price (number or 0 = free)',
+                labelMetro: 'Lines where you can meet *',
+                labelImage: 'Product photo *',
+                imageHint: 'Tap to upload a photo',
+                labelContact: 'Contact link (WhatsApp / Messenger) *',
+                submitPublish: 'Publish',
+                publishSuccess: 'Done! It now appears on the selected lines.',
+                publishError: 'Error publishing. Check the fields.',
+                navMarket: 'Market',
+                myTab: 'My',
+                myListings: 'My listings',
+                myFavorites: 'My favorites',
+                noListings: 'You haven\'t published anything yet.',
+                noFavorites: 'No favorites yet.',
+                labelFav: 'Favorite',
+                labelFaved: 'Saved',
+                ariaLabelRemoveFav: 'Remove from favorites',
+                ariaLabelAddFav: 'Add to favorites',
+                modalClose: 'Close',
+                placeholderTitle: 'e.g. iPhone 12',
+                placeholderDesc: 'Details, condition, etc.',
+                placeholderContact: 'https://wa.me/52...',
+                navAria: 'Navigation',
+                publishBtnTitle: 'Publish',
+                sellBtn: 'Sell'
+            }
+        };
+
+        const STORAGE_MY_LISTINGS = 'metro_my_listings';
+        const STORAGE_FAVORITES = 'metro_favorites';
+
+        function trackEvent(eventType, extra) {
+            try {
+                var payload = { event_type: eventType, extra: extra || {} };
+                var blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                if (navigator.sendBeacon) navigator.sendBeacon('/api/track', blob);
+                else fetch('/api/track', { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' }, keepalive: true });
+            } catch (e) {}
+        }
+
+        function getMyListings() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_MY_LISTINGS) || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+        function saveMyListing(item) {
+            const list = getMyListings();
+            list.unshift(item);
+            localStorage.setItem(STORAGE_MY_LISTINGS, JSON.stringify(list));
+        }
+        function getFavorites() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_FAVORITES) || '[]');
+            } catch (e) {
+                return [];
+            }
+        }
+        function getFavoriteIds() {
+            return new Set(getFavorites().map(f => f.id));
+        }
+        function toggleFavorite(p) {
+            const list = getFavorites();
+            const idx = list.findIndex(f => f.id === p.id);
+            const snapshot = {
+                id: p.id,
+                title: p.title,
+                description: p.description,
+                price: p.price,
+                image: p.image,
+                contact_link: p.contact_link || p.contact_link_2,
+                contact_link_2: p.contact_link_2 || p.contact_link,
+                metro_lines: p.metro_lines || []
+            };
+            if (idx >= 0) {
+                list.splice(idx, 1);
+            } else {
+                list.push(snapshot);
+            }
+            localStorage.setItem(STORAGE_FAVORITES, JSON.stringify(list));
+        }
+
+        function getLang() {
+            var path = (window.location.pathname || '/').replace(/\/$/, '') || '/';
+            if (path === '/en') return 'en';
+            return localStorage.getItem('metro_lang') || 'es';
+        }
+
+        function setLang(lang) {
+            localStorage.setItem('metro_lang', lang);
+            var path = lang === 'en' ? '/en' : '/';
+            if (window.location.pathname.replace(/\/$/, '') !== (path === '/' ? '' : path))
+                window.history.replaceState(null, '', path);
+            document.documentElement.lang = lang === 'es' ? 'es' : 'en';
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang] && i18n[lang][key] !== undefined) {
+                    el.textContent = i18n[lang][key];
+                }
+            });
+            document.getElementById('langEs').classList.toggle('active', lang === 'es');
+            document.getElementById('langEn').classList.toggle('active', lang === 'en');
+            var esMy = document.getElementById('langEsMy');
+            var enMy = document.getElementById('langEnMy');
+            if (esMy) esMy.classList.toggle('active', lang === 'es');
+            if (enMy) enMy.classList.toggle('active', lang === 'en');
+            var closeBtn = document.getElementById('modalClose');
+            if (closeBtn) closeBtn.setAttribute('aria-label', t('modalClose'));
+            var nav = document.querySelector('.bottom-bar');
+            if (nav) nav.setAttribute('aria-label', t('navAria'));
+            var btnPub = document.getElementById('btnPublish');
+            if (btnPub) btnPub.setAttribute('title', t('publishBtnTitle'));
+            var pTitle = document.getElementById('pTitle');
+            if (pTitle) pTitle.placeholder = t('placeholderTitle');
+            var pDesc = document.getElementById('pDesc');
+            if (pDesc) pDesc.placeholder = t('placeholderDesc');
+            var pContact = document.getElementById('pContact');
+            if (pContact) pContact.placeholder = t('placeholderContact');
+            renderProducts(lastProducts);
+            if (document.getElementById('myPage').classList.contains('active')) renderMyPageContent();
+        }
+
+        function t(key) {
+            var lang = getLang();
+            if (i18n[lang] && i18n[lang][key] !== undefined) return i18n[lang][key];
+            var fallback = lang === 'en' ? (i18n.en && i18n.en[key]) : (i18n.es && i18n.es[key]);
+            return fallback !== undefined ? fallback : key;
+        }
+
+        let currentMetro = 'all';
+        let lastProducts = [];
+
+        function getLineLabel(lineId) {
+            return t('linePrefix') + lineId;
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('metroTabs');
+            const allLabel = t('tabAll');
+            container.innerHTML = [
+                { id: 'all', label: allLabel },
+                ...METRO_LINES.filter(l => l !== 'all').map(l => ({ id: l, label: getLineLabel(l) }))
+            ].map(({ id, label }) =>
+                `<button type="button" class="tab ${id === currentMetro ? 'active' : ''}" data-metro="${id}">${escapeHtml(label)}</button>`
+            ).join('');
+
+            container.querySelectorAll('.tab').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentMetro = btn.getAttribute('data-metro');
+                    container.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    fetchAndRender(currentMetro);
+                });
+            });
+        }
+
+        function escapeHtml(s) {
+            if (!s) return '';
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        function formatPrice(price) {
+            if (!price || price === '0') return t('priceFree');
+            return t('priceLabel') + price;
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('productsGrid');
+            const loading = document.getElementById('loadingState');
+            const empty = document.getElementById('emptyState');
+
+            if (!products || !products.length) {
+                grid.style.display = 'none';
+                loading.style.display = 'none';
+                empty.style.display = 'block';
+                empty.querySelector('p').textContent = t('empty');
+                return;
+            }
+
+            loading.style.display = 'none';
+            empty.style.display = 'none';
+            grid.style.display = 'grid';
+
+            const favIds = getFavoriteIds();
+            grid.innerHTML = products.map(p => {
+                const imgUrl = (p.image && p.image.trim()) || '';
+                const thumbUrl = imgUrl ? getThumbUrl(imgUrl) : '';
+                const img = imgUrl
+                    ? `<img class="product-image" src="${escapeHtml(thumbUrl)}" data-full="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.getAttribute('data-full')">`
+                    : '<div class="product-image-placeholder">🚇</div>';
+                const contactLink = (p.contact_link && p.contact_link.trim()) || p.contact_link_2 || '#';
+                const title = escapeHtml(p.title || '');
+                const desc = escapeHtml((p.description || '').trim());
+                const isFav = favIds.has(p.id);
+                const favLabel = isFav ? t('labelFaved') : t('labelFav');
+                const favIcon = isFav ? '❤' : '🤍';
+                return `
+                    <article class="product-card" data-product-id="${p.id}">
+                        <div class="product-image-wrap">${img}</div>
+                        <div class="product-body">
+                            <div class="product-body-top">
+                                <div class="product-price">${formatPrice(p.price)}</div>
+                                <button type="button" class="heart-btn ${isFav ? 'faved' : ''}" data-id="${p.id}" aria-label="${isFav ? escapeHtml(t('ariaLabelRemoveFav')) : escapeHtml(t('ariaLabelAddFav'))}"><span class="heart-icon">${favIcon}</span><span class="heart-text">${escapeHtml(favLabel)}</span></button>
+                            </div>
+                            <h2 class="product-title">${title}</h2>
+                            ${desc ? `<p class="product-desc">${desc}</p>` : ''}
+                            <a class="contact-btn" href="${escapeHtml(contactLink)}" target="_blank" rel="noopener noreferrer">${t('contactMe')}</a>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+            grid.querySelectorAll('.heart-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = parseInt(this.getAttribute('data-id'), 10);
+                    const p = products.find(x => x.id === id);
+                    if (!p) return;
+                    toggleFavorite(p);
+                    const isFav = getFavoriteIds().has(id);
+                    trackEvent('metro_favorite', { product_id: id, action: isFav ? 'add' : 'remove' });
+                    this.classList.toggle('faved', isFav);
+                    this.querySelector('.heart-icon').textContent = isFav ? '❤' : '🤍';
+                    this.querySelector('.heart-text').textContent = isFav ? t('labelFaved') : t('labelFav');
+                });
+            });
+            grid.querySelectorAll('.contact-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    var card = this.closest('[data-product-id]');
+                    if (card) trackEvent('metro_contact_click', { product_id: parseInt(card.getAttribute('data-product-id'), 10) });
+                });
+            });
+        }
+
+        function getThumbUrl(url) {
+            if (!url || url.indexOf('/static/product-images/') !== 0) return url;
+            return url.replace(/\/static\/product-images\/([^/]+)$/, '/static/product-images/thumb/$1').replace(/\.[a-z]+$/i, '.jpg');
+        }
+        function renderCard(p, showHeart) {
+            const imgUrl = (p.image && p.image.trim()) || '';
+            const thumbUrl = imgUrl ? getThumbUrl(imgUrl) : '';
+            const img = imgUrl
+                ? `<img class="product-image" src="${escapeHtml(thumbUrl)}" data-full="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.getAttribute('data-full')">`
+                : '<div class="product-image-placeholder">🚇</div>';
+            const contactLink = (p.contact_link && p.contact_link.trim()) || p.contact_link_2 || '#';
+            const title = escapeHtml(p.title || '');
+            const desc = escapeHtml((p.description || '').trim());
+            const heartBtn = showHeart
+                ? `<button type="button" class="heart-btn faved" data-id="${p.id}" aria-label="${escapeHtml(t('ariaLabelRemoveFav'))}"><span class="heart-icon">❤</span><span class="heart-text">${escapeHtml(t('labelFaved'))}</span></button>`
+                : '';
+            const bodyTop = showHeart
+                ? `<div class="product-body-top"><div class="product-price">${formatPrice(p.price)}</div>${heartBtn}</div>`
+                : `<div class="product-body-top"><div class="product-price">${formatPrice(p.price)}</div></div>`;
+            return `
+                <article class="product-card">
+                    <div class="product-image-wrap">${img}</div>
+                    <div class="product-body">
+                        ${bodyTop}
+                        <h2 class="product-title">${title}</h2>
+                        ${desc ? `<p class="product-desc">${desc}</p>` : ''}
+                        <a class="contact-btn" href="${escapeHtml(contactLink)}" target="_blank" rel="noopener noreferrer">${t('contactMe')}</a>
+                    </div>
+                </article>
+            `;
+        }
+
+        function showMainPage() {
+            document.getElementById('mainPage').classList.add('active');
+            document.getElementById('myPage').classList.remove('active');
+            document.getElementById('btnNavMarket').classList.add('active');
+            document.getElementById('btnNavMy').classList.remove('active');
+        }
+        function showMyPage() {
+            document.getElementById('mainPage').classList.remove('active');
+            document.getElementById('myPage').classList.add('active');
+            document.getElementById('btnNavMarket').classList.remove('active');
+            document.getElementById('btnNavMy').classList.add('active');
+            renderMyPageContent();
+        }
+        function renderMyPageContent() {
+            const listings = getMyListings();
+            const favorites = getFavorites();
+            document.getElementById('myListingsEmpty').style.display = listings.length ? 'none' : 'block';
+            document.getElementById('myListingsGrid').style.display = listings.length ? 'grid' : 'none';
+            document.getElementById('myListingsGrid').innerHTML = listings.length ? listings.map(p => renderCard(p, false)).join('') : '';
+            document.getElementById('myFavoritesEmpty').style.display = favorites.length ? 'none' : 'block';
+            document.getElementById('myFavoritesGrid').style.display = favorites.length ? 'grid' : 'none';
+            document.getElementById('myFavoritesGrid').innerHTML = favorites.length ? favorites.map(p => renderCard(p, true)).join('') : '';
+            document.getElementById('myFavoritesGrid').querySelectorAll('.heart-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'), 10);
+                    const list = getFavorites().filter(f => f.id !== id);
+                    localStorage.setItem(STORAGE_FAVORITES, JSON.stringify(list));
+                    renderMyPageContent();
+                });
+            });
+        }
+
+        async function fetchAndRender(metro) {
+            const loading = document.getElementById('loadingState');
+            const grid = document.getElementById('productsGrid');
+            const empty = document.getElementById('emptyState');
+            loading.style.display = 'block';
+            grid.style.display = 'none';
+            empty.style.display = 'none';
+            loading.textContent = t('loading');
+
+            try {
+                const res = await fetch('/api/products?metro=' + encodeURIComponent(metro));
+                const data = await res.json();
+                const products = data.products || [];
+                lastProducts = products;
+                renderProducts(products);
+            } catch (e) {
+                console.error(e);
+                document.getElementById('emptyState').querySelector('p').textContent = 'Error al cargar.';
+                document.getElementById('emptyState').style.display = 'block';
+                loading.style.display = 'none';
+            }
+        }
+
+        document.getElementById('langEs').addEventListener('click', () => setLang('es'));
+        document.getElementById('langEn').addEventListener('click', () => setLang('en'));
+        document.getElementById('langEsMy').addEventListener('click', () => setLang('es'));
+        document.getElementById('langEnMy').addEventListener('click', () => setLang('en'));
+
+        function openModal() {
+            const lines = METRO_LINES.filter(l => l !== 'all');
+            const container = document.getElementById('metroCheckboxes');
+            const was = container.querySelectorAll('input[name=metro]:checked');
+            const checked = new Set(Array.from(was).map(i => i.value));
+            container.innerHTML = lines.map(id =>
+                `<label><input type="checkbox" name="metro" value="${escapeHtml(id)}" ${checked.has(id) ? 'checked' : ''}> ${escapeHtml(getLineLabel(id))}</label>`
+            ).join('');
+            document.getElementById('publishModal').classList.add('open');
+        }
+        function closeModal() {
+            document.getElementById('publishModal').classList.remove('open');
+        }
+        function showMainPage() {
+            document.getElementById('mainPage').classList.add('active');
+            document.getElementById('myPage').classList.remove('active');
+            document.getElementById('btnNavMarket').classList.add('active');
+            document.getElementById('btnNavMy').classList.remove('active');
+        }
+        function showMyPage() {
+            document.getElementById('mainPage').classList.remove('active');
+            document.getElementById('myPage').classList.add('active');
+            document.getElementById('btnNavMarket').classList.remove('active');
+            document.getElementById('btnNavMy').classList.add('active');
+            renderMyPageContent();
+        }
+        function renderMyPageContent() {
+            const listings = getMyListings();
+            const favorites = getFavorites();
+            document.getElementById('myListingsEmpty').style.display = listings.length ? 'none' : 'block';
+            document.getElementById('myListingsGrid').style.display = listings.length ? 'grid' : 'none';
+            document.getElementById('myListingsGrid').innerHTML = listings.length ? listings.map(p => renderCard(p, false)).join('') : '';
+            document.getElementById('myFavoritesEmpty').style.display = favorites.length ? 'none' : 'block';
+            document.getElementById('myFavoritesGrid').style.display = favorites.length ? 'grid' : 'none';
+            document.getElementById('myFavoritesGrid').innerHTML = favorites.length ? favorites.map(p => renderCard(p, true)).join('') : '';
+            document.getElementById('myFavoritesGrid').querySelectorAll('.heart-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'), 10);
+                    trackEvent('metro_favorite', { product_id: id, action: 'remove' });
+                    const list = getFavorites().filter(f => f.id !== id);
+                    localStorage.setItem(STORAGE_FAVORITES, JSON.stringify(list));
+                    renderMyPageContent();
+                });
+            });
+        }
+
+        document.getElementById('btnPublish').addEventListener('click', function() {
+            trackEvent('metro_publish_click', {});
+            openModal();
+        });
+        document.getElementById('btnNavMarket').addEventListener('click', showMainPage);
+        document.getElementById('btnNavMy').addEventListener('click', showMyPage);
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+        document.getElementById('publishModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        let uploadedImageBase64 = '';
+        document.getElementById('imageUploadArea').addEventListener('click', () => document.getElementById('imageInput').click());
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                uploadedImageBase64 = ev.target.result;
+                const preview = document.getElementById('imagePreview');
+                const placeholder = document.getElementById('imageUploadPlaceholder');
+                preview.src = uploadedImageBase64;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+                document.getElementById('imageUploadArea').classList.add('has-image');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 2800);
+        }
+
+        document.getElementById('publishForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const title = document.getElementById('pTitle').value.trim();
+            const description = document.getElementById('pDesc').value.trim();
+            const price = (document.getElementById('pPrice').value.trim() || '0').replace(/\D/g, '') || '0';
+            const contact = document.getElementById('pContact').value.trim();
+            const metroNodes = document.querySelectorAll('#metroCheckboxes input[name=metro]:checked');
+            const metro_lines = Array.from(metroNodes).map(n => n.value);
+            if (!title || !contact) {
+                showToast(t('publishError'));
+                return;
+            }
+            if (!metro_lines.length) {
+                showToast(t('labelMetro').replace(' *', ''));
+                return;
+            }
+            if (!uploadedImageBase64) {
+                showToast(t('labelImage').replace(' *', ''));
+                return;
+            }
+            const btn = document.getElementById('publishSubmit');
+            btn.disabled = true;
+            btn.textContent = '...';
+            try {
+                const res = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        description,
+                        price,
+                        metro_lines,
+                        image: uploadedImageBase64,
+                        contact_link: contact
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    trackEvent('metro_publish_success', {});
+                    closeModal();
+                    saveMyListing(data.item);
+                    document.getElementById('publishForm').reset();
+                    document.getElementById('imagePreview').style.display = 'none';
+                    document.getElementById('imageUploadPlaceholder').style.display = '';
+                    document.getElementById('imageUploadArea').classList.remove('has-image');
+                    uploadedImageBase64 = '';
+                    showToast(t('publishSuccess'));
+                    fetchAndRender(currentMetro);
+                    if (document.getElementById('myPage').classList.contains('active')) renderMyPageContent();
+                } else {
+                    showToast(data.error || t('publishError'));
+                }
+            } catch (err) {
+                showToast(t('publishError'));
+            }
+            btn.disabled = false;
+            btn.textContent = t('submitPublish');
+        });
+
+        setLang(getLang());
+        document.documentElement.lang = getLang() === 'es' ? 'es' : 'en';
+        (function trackMetroPageView() {
+            try {
+                var payload = { event_type: 'page_view', extra: {} };
+                var blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                if (navigator.sendBeacon) navigator.sendBeacon('/api/track', blob);
+                else fetch('/api/track', { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' }, keepalive: true });
+            } catch (e) {}
+        })();
+        renderTabs();
+        fetchAndRender('all');
+    </script>
+</body>
+</html>

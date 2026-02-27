@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plaza de Libros - Trueque Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- 头部导航 -->
+    <header>
+        <nav>
+            <div class="logo">Trueque Digital</div>
+            <ul class="nav-links">
+                <li><a href="/">Plaza de Libros</a></li>
+                <li><a href="/exchange-wall">El Mural del Trueque</a></li>
+                <li><a href="#mi-estanteria">Mi Estantería</a></li>
+                <li><a href="#perfil">Mi Perfil</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- 装饰性图标 -->
+        <div class="decorative-icon cactus">🌵</div>
+        <div class="decorative-icon coffee">☕</div>
+        <div class="decorative-icon sun">☀️</div>
+        
+        <!-- 页面标题 -->
+        <div class="plaza-header">
+            <h1>Plaza de Libros</h1>
+            <p>Descubre historias, encuentra tu próximo libro</p>
+        </div>
+
+        <!-- 今日故事轮播 -->
+        <div class="today-story">
+            <h2>Historia del Día</h2>
+            <div class="story-carousel">
+                <div class="story-card">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/81dQwQlmAXL.jpg" alt="Libro destacado">
+                    <h3>Una historia de conexión</h3>
+                    <p>María compartió cómo este libro la ayudó durante un momento difícil. Ahora busca que encuentre a alguien más que lo necesite...</p>
+                </div>
+                <div class="story-card">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/71QKQ9KJZJL.jpg" alt="Libro destacado">
+                    <h3>El poder de las palabras</h3>
+                    <p>Carlos encontró en estas páginas una nueva forma de entender su identidad mexicana. Una lectura que cambió su perspectiva...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 过滤器 -->
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            <button class="filter-btn" data-filter="has_story">Con una historia</button>
+            <button class="filter-btn" data-filter="verified">De usuarios verificados</button>
+            <button class="filter-btn" data-filter="fiction">Ficción</button>
+            <button class="filter-btn" data-filter="non-fiction">No ficción</button>
+            <button class="filter-btn" data-filter="poetry">Poesía</button>
+        </div>
+
+        <!-- 图书网格 -->
+        <div class="books-grid" id="booksGrid">
+            {% for book in books %}
+            <div class="book-card" data-book-id="{{ book.id }}">
+                <div class="book-card-content">
+                    <div class="book-cover">
+                        <img src="{{ book.cover }}" alt="{{ book.title }}">
+                        <span class="condition-badge">⭐ {{ book.condition }}</span>
+                    </div>
+                    <div class="book-info">
+                        <div class="why-release">
+                            <h4>Por qué lo suelto</h4>
+                            <p>{{ book.why_release }}</p>
+                        </div>
+                        <div class="user-info">
+                            <img src="{{ book.user.avatar }}" alt="{{ book.user.name }}" class="user-avatar">
+                            <div class="user-details">
+                                <div class="user-name">{{ book.user.name }}</div>
+                                <span class="trust-badge {{ book.user.trust_level }}">{{ book.user.trust_badge }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a href="/book/{{ book.id }}" class="view-story-btn">Ver historia completa</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 空状态提示 -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">📚</div>
+            <h3>Aquí aún no hay historias...</h3>
+            <p>¡Sé el primero en escribir la tuya!</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/plaza.js') }}"></script>
+</body>
+</html>
+

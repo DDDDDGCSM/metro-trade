@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trueque Digital - Intercambio de Libros</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #F5E6D3;
+            color: #3E2723;
+            line-height: 1.6;
+            padding-bottom: 20px; /* 已移除底部悬浮按钮，仅保留少量底部留白 */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        /* 头部 */
+        .header {
+            text-align: center;
+            padding: 20px 15px;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #2C5F2D;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #6D4C41;
+            font-size: 14px;
+        }
+
+        /* 图书卡片 */
+        .book-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .book-header {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .book-cover {
+            width: 100px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+
+        .book-info {
+            flex: 1;
+        }
+
+        .book-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2C5F2D;
+            margin-bottom: 5px;
+        }
+
+        .book-author {
+            color: #6D4C41;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .whatsapp-icon {
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            margin-left: 5px;
+        }
+
+        .whatsapp-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .whatsapp-icon.hidden {
+            display: none;
+        }
+
+        .share-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #2C5F2D;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .share-btn:hover {
+            background: #4A7C59;
+            transform: translateY(-2px);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #E8D5B7;
+            flex-shrink: 0;
+        }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .trust-badge {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: #E8D5B7;
+        }
+
+        .why-release {
+            background: #FAF5ED;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #2C5F2D;
+            margin-top: 15px;
+        }
+
+        .why-release h4 {
+            font-size: 13px;
+            color: #2C5F2D;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .why-release p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #3E2723;
+        }
+
+        /* 导航箭头 */
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .nav-arrow {
+            background: #2C5F2D;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-arrow:hover:not(:disabled) {
+            background: #4A7C59;
+            transform: scale(1.1);
+        }
+
+        .nav-arrow:disabled {
+            background: #95A5A6;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .book-counter {
+            font-size: 14px;
+            color: #6D4C41;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .book-counter span {
+            display: inline-block;
+        }
+
+        .request-btn {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto 0;
+            padding: 15px;
+            background: #2C5F2D;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+        }
+
+        .request-btn:hover {
+            background: #4A7C59;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(44, 95, 45, 0.3);
+        }
+
+        /* 每本书下方的交换按钮 */
+        .book-exchange-btn {
+            display: block;
+            font-size: 15px;
+        }
+
+        /* 底部固定入口：前往线上图书集市（tianguis） */
+        .fixed-bottom-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(245, 230, 211, 0.98);
+            padding: 10px 12px 16px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.12);
+            z-index: 1000;
+        }
+
+        .market-btn {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 11px 16px;
+            border-radius: 999px;
+            border: none;
+            background: #2C5F2D;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            padding: 30px 20px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #6D4C41;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: #F5E6D3;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            color: #2C5F2D;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #3E2723;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 2px solid #E8D5B7;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2C5F2D;
+        }
+
+        .image-upload-area {
+            border: 2px dashed #E8D5B7;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .image-upload-area:hover {
+            border-color: #2C5F2D;
+            background: #FAF5ED;
+        }
+
+        .image-upload-area.has-image {
+            border-style: solid;
+            padding: 10px;
+        }
+
+        .uploaded-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            color: #6D4C41;
+            margin-bottom: 10px;
+        }
+
+        .whatsapp-display {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #E8F5E9;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .whatsapp-display.active {
+            display: block;
+        }
+
+        .whatsapp-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #25D366;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+
+        .whatsapp-link:hover {
+            background: #25D366;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .book-option {
+            border: 2px solid #E8D5B7;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .book-option:hover {
+            border-color: #2C5F2D;
+            transform: translateY(-2px);
+        }
+
+        .book-option.selected {
+            border-color: #2C5F2D;
+            background: #FAF5ED;
+        }
+
+        .book-option img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+
+        .book-option p {
+            font-size: 11px;
+            margin-top: 5px;
+            line-height: 1.3;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: #2C5F2D;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background: #4A7C59;
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            background: #95A5A6;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #E8F5E9;
+            border-radius: 8px;
+            color: #2C5F2D;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* 历史交换区 */
+        .history-section {
+            margin-top: 30px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .history-section h2 {
+            font-size: 20px;
+            color: #2C5F2D;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .exchange-list {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px 0;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .exchange-list::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .exchange-list::-webkit-scrollbar-track {
+            background: #F5E6D3;
+            border-radius: 3px;
+        }
+
+        .exchange-list::-webkit-scrollbar-thumb {
+            background: #2C5F2D;
+            border-radius: 3px;
+        }
+
+        .exchange-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: #FAF5ED;
+            border-radius: 10px;
+            min-width: 280px;
+            flex-shrink: 0;
+            scroll-snap-align: start;
+        }
+
+        .exchange-book {
+            text-align: center;
+            flex: 1;
+        }
+
+        .exchange-book img {
+            width: 60px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .exchange-book p {
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .exchange-icon {
+            font-size: 20px;
+        }
+
+        .exchange-date {
+            font-size: 11px;
+            color: #6D4C41;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .book-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .book-cover {
+                width: 120px;
+                height: 180px;
+            }
+
+            .book-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 10px;
+                padding: 20px 15px;
+            }
+
+            .exchange-item {
+                flex-direction: row;
+            }
+
+            .exchange-icon {
+                transform: none;
+            }
+
+            .share-btn {
+                position: static;
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6D4C41;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1>📚 Trueque Digital</h1>
+            <p>No solo intercambias libros, intercambias historias.</p>
+        </div>
+
+        <!-- 图书列表：直接向下滑动浏览所有图书 -->
+        <div style="position: relative;">
+            <div id="bookDisplay">
+                <!-- 图书卡片列表将在这里动态加载 -->
+            </div>
+            <!-- 分享按钮 -->
+            <button class="share-btn" onclick="shareBook()">
+                📤 Compartir
+            </button>
+        </div>
+
+        <!-- 历史交换区（保持原样，左右滑动） -->
+        <div class="history-section">
+            <h2>🤝 Intercambios Realizados</h2>
+            <div class="exchange-list" id="exchangeList">
+                <!-- 交换记录将在这里动态加载 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部固定入口：线上图书集市（Tianguis de Libros） -->
+    <div class="fixed-bottom-btn">
+        <button class="market-btn" onclick="goToMarket()">
+            🏪 Ir al Tianguis de Libros · Mercado de intercambio entre compas
+        </button>
+    </div>
+
+    <!-- 申请交换模态框 -->
+    <div class="modal" id="exchangeModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h2 class="modal-title">Solicitar Intercambio</h2>
+            
+            <div class="form-group">
+                <label>¿Por qué este libro te late? ¡Cuéntale tu historia al compa!</label>
+                <textarea id="userStory" placeholder="Escribe aquí por qué te late este libro y qué libro quieres intercambiar..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Sube una foto de tu libro:</label>
+                <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('bookImageInput').click()">
+                    <div class="upload-icon">📷</div>
+                    <p style="color: #6D4C41; font-size: 14px;">Toca para subir una foto</p>
+                    <img id="uploadedImagePreview" class="uploaded-image" style="display: none;">
+                </div>
+                <input type="file" id="bookImageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+            </div>
+            
+            <div class="whatsapp-display" id="whatsappDisplay">
+                <p style="color: #2C5F2D; font-weight: 600; margin-bottom: 10px;">¡Listo, compa! Tu solicitud ya está enviada 🎉</p>
+                <p style="color: #6D4C41; font-size: 14px;">Ahora contacta al dueño del libro por WhatsApp:</p>
+                <a href="https://wa.me/15172976578" target="_blank" class="whatsapp-link" id="whatsappLink" onclick="openWhatsApp(selectedBookId || (books[currentBookIndex] && books[currentBookIndex].id)); return true;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                    </svg>
+                    +1 517 297 6578
+                </a>
+            </div>
+
+            <button class="submit-btn" onclick="submitExchange()" id="submitBtn">
+                🤝 ¡Enviar mi Solicitud!
+            </button>
+
+            <div class="success-message" id="successMessage">
+                ✅ ¡Listo! Ya enviamos tu solicitud. Te avisamos cuando el compa responda.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 图书数据（17本真实图书）
+        const books = [
+            {
+                id: 1,
+                title: 'Pedro Páramo',
+                author: 'Juan Rulfo',
+                cover: '/static/libros-mexico/pedro-paramo.jpeg',
+                why_release: 'Este libro no se lee con los ojos, se escucha con los oídos. En el silencioso pueblo de Comala, cada escalón de piedra, cada ráfaga de viento transmite las conversaciones de las almas. Me perdí en los fragmentos del tiempo, sin poder distinguir si el narrador era un vivo o un fantasma. Al cerrar el libro, sentí que también me había convertido en parte de ese pueblo—ese lugar eternamente atrapado por el pecado y la memoria.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 2,
+                title: 'Obra completa de Juan Rulfo',
+                author: 'Juan Rulfo',
+                cover: '/static/libros-mexico/narrativa-completa.jpg',
+                why_release: 'Si "Pedro Páramo" es un laberinto, esta obra completa es todo el universo de Rulfo. Esos cuentos son como cuchillos afilados y silenciosos que diseccionan con precisión la soledad y la resistencia de la tierra mexicana. Después de leerlos, esa tierra árida, violenta y llena de divinidad quedó grabada para siempre en mi corazón.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 3,
+                title: 'La muerte de Artemio Cruz',
+                author: 'Carlos Fuentes',
+                cover: '/static/libros-mexico/muerte-artemio-cruz.png',
+                why_release: 'Siguiendo la conciencia de un revolucionario moribundo, experimenté la grandeza y la desintegración moral del México del siglo XX. Fuentes usa los pronombres "tú", "yo" y "él" para hacerme simultáneamente narrador, juez y espectador. Esto no es solo la muerte de una persona, sino todo el proceso de cómo un ideal es corrompido por el poder y el tiempo.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 4,
+                title: 'Del amor y otros demonios',
+                author: 'Gabriel García Márquez (Colombia)',
+                cover: '/static/libros-mexico/amor-otros-demonios.jpg',
+                why_release: 'Márquez deja de lado la gran narrativa de "Cien años" y cuenta una tragedia sobre la paranoia y la inocencia. La joven está prisionera tanto del amor como de la superstición, y sus 22 metros de cabello son símbolo de vitalidad pero también una cadena invisible. Esta historia es como una elegía triste que habla del daño hecho en nombre del amor.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 5,
+                title: 'Cien años de soledad',
+                author: 'Gabriel García Márquez (Colombia)',
+                cover: '/static/libros-mexico/cien-anos-soledad.jpg',
+                why_release: 'La primera vez que lo leí, me confundí con todos esos nombres repetidos; la segunda vez, vi cómo el destino de una familia gira en espiral como el ADN; la tercera vez, de repente entendí que la "soledad" no es el estado de una persona, sino el destino de una civilización que se repite constantemente entre el júbilo y el olvido.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 6,
+                title: 'Los detectives salvajes',
+                author: 'Roberto Bolaño (Chile)',
+                cover: '/static/libros-mexico/detectives-salvajes.png',
+                why_release: 'Este libro es una carta de amor y una elegía para todos los jóvenes literarios. Seguí a dos "poetas realistas instintivos" a través de continentes, buscando a un escritor desaparecido. La primera parte es la llama de la juventud, la segunda es el calor residual de las cenizas. Me hizo entender que buscar la literatura en sí misma es un vagabundeo grandioso y trágico.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 7,
+                title: 'Papeles falsos',
+                author: 'Valeria Luiselli',
+                cover: '/static/libros-mexico/papeles-falsos.png',
+                why_release: 'No es una novela tradicional, sino una elegante deriva sobre la lectura y la identidad. La autora rastrea a un poeta casi olvidado por las calles y bibliotecas de Nueva York. Sentí una extraña resonancia: en una ciudad que no nos pertenece, construyendo un refugio con palabras, ¿no estamos todos usando algún tipo de "documento falso"?',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 8,
+                title: 'Los rituales del caos',
+                author: 'Carlos Monsiváis',
+                cover: '/static/libros-mexico/rituales-caos.png',
+                why_release: 'Monsiváis es el "diagnosticador cultural" más agudo de la sociedad mexicana. Leer sus ensayos es como ver una película de montaje rápido: Día de Muertos, murales revolucionarios, telenovelas, escándalos políticos... Me hizo descubrir que para entender una nación, no solo hay que ver su épica, sino también sus chismes, chistes y cultura popular.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 9,
+                title: 'La reina del sur',
+                author: 'Arturo Pérez-Reverte (España)',
+                cover: '/static/libros-mexico/reina-del-sur.png',
+                why_release: 'Aunque el autor es español, creó una imagen inolvidable de una narcotraficante mexicana. Me impactó el realismo de la historia: no hay una simple oposición entre el bien y el mal, sino que muestra cómo en la zona gris entre la violencia y el interés, una persona pasa de víctima a controladora. Es una épica fría sobre la supervivencia y el poder.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 10,
+                title: 'La noche de Tlatelolco',
+                author: 'Elena Poniatowska',
+                cover: '/static/libros-mexico/noche-tlatelolco.png',
+                why_release: 'Poniatowska le pasó el micrófono a los miembros de pandillas juveniles más marginados de la Ciudad de México. Su lenguaje es áspero, violento, pero también lleno de una vulnerabilidad desgarradora. Después de leerlo, entendí que "los rotos" no solo se refiere a ellos, sino también a la sociedad que los desespera. Este es un libro que requiere coraje para enfrentarlo.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 11,
+                title: 'El libro de arena',
+                author: 'Jorge Luis Borges (Argentina)',
+                cover: '/static/libros-mexico/libro-arena.png',
+                why_release: 'Borges construye el laberinto filosófico más aterrador con las historias más breves. Ese "libro de arena" sin principio ni fin finalmente es abandonado por su dueño debido a su infinitud. Es muy parecido a nuestro anhelo y miedo hacia el conocimiento y el universo—lo que realmente tememos tal vez sea esa verdad sin límites e incomprensible.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 12,
+                title: 'Piedra de sol',
+                author: 'Octavio Paz',
+                cover: '/static/libros-mexico/piedra-sol.png',
+                why_release: 'Intenté leerlo en voz alta, dejando que las sílabas del español rodaran entre mis labios. Los versos de Paz son como un largo río de conciencia que disuelve mitos aztecas, amor moderno y memoria histórica. 584 líneas, conectadas de principio a fin, forman un círculo perfecto del tiempo. En ese momento, sentí que la poesía no es decoración, sino una forma antigua y precisa de percibir el mundo.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 13,
+                title: 'La historia de mis dientes',
+                author: 'Valeria Luiselli',
+                cover: '/static/libros-mexico/historia-mis-dientes.png',
+                why_release: 'Un subastador inventa historias absurdas y filosóficas sobre los dientes de celebridades. Luiselli explora con un humor ligero el poder de la narrativa—cómo damos valor a los objetos (e incluso a la vida) a través de historias. Este libro me hizo reír y también pensar: ¿no estamos todos contando nuestra propia versión de "historias de dientes"?',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 14,
+                title: 'Como agua para chocolate',
+                author: 'Laura Esquivel',
+                cover: '/static/libros-mexico/agua-chocolate.jpg',
+                why_release: '¡Este es un libro que "sazona"! Las recetas antes de cada capítulo, siguiendo las emociones de la protagonista Tita, convierten la comida en magia emocional. Cuando está triste, los invitados que comen su pastel lloran a lágrimas. Mientras leía, sentí que también probaba el ardor del amor, la amargura del encierro y la dulzura de la libertad. Es un banquete para los sentidos y el alma.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 15,
+                title: 'El principito',
+                author: 'Antoine de Saint-Exupéry (Francia)',
+                cover: '/static/libros-mexico/principito.png',
+                why_release: 'De niño, lo leí como un cuento sobre una rosa y un zorro; de adulto, es un espejo que refleja cómo me convertí en "adulto". "Lo esencial es invisible a los ojos." Esta frase tiene diferente peso a diferentes edades. Me recuerda que no debo olvidar que también fui ese niño del planeta B612.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 16,
+                title: 'Hábitos atómicos',
+                author: 'James Clear (Estados Unidos)',
+                cover: '/static/libros-mexico/habitos-atomicos.png',
+                why_release: 'Después de leer tantas grandes narrativas sobre el destino y la soledad, este libro es como una herramienta práctica para la vida. Me dice que los grandes cambios comienzan con pequeñas acumulaciones diarias del 1%. Me hizo bajar del cielo literario a la tierra de la realidad, comenzando a construir pacientemente y sistemáticamente la vida que quiero.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            },
+            {
+                id: 17,
+                title: 'La región más transparente',
+                author: 'Carlos Fuentes',
+                cover: '/static/libros-mexico/region-transparente.png',
+                why_release: 'Esta es la "novela retrato" que Fuentes escribió para la Ciudad de México. Caminé por el Paseo de la Reforma, rozándome con diversos personajes: nuevos ricos de la revolución, nobles decadentes, artistas, estafadores... Juntos forman el bullicio y la vacuidad de esta ciudad. El título irónico "La región más transparente" expresa perfectamente el caos y la contradicción bajo el halo de la modernización.',
+                user: { name: 'Mateo', avatar: '/static/avatar/friend-avatar.jpg', trust_badge: '📖 Bibliófilo Experto' }
+            }
+        ];
+
+        // 我的图书（用于交换）
+        const myBooks = [
+            { id: 1, title: 'La casa de los espíritus', cover: 'https://images-na.ssl-images-amazon.com/images/I/71QKQ9KJZJL.jpg' },
+            { id: 2, title: 'Rayuela', cover: 'https://images-na.ssl-images-amazon.com/images/I/81Y5Z8KJZJL.jpg' },
+            { id: 3, title: 'El amor en los tiempos del cólera', cover: 'https://images-na.ssl-images-amazon.com/images/I/81dQwQlmAXL.jpg' },
+            { id: 4, title: 'La tregua', cover: 'https://images-na.ssl-images-amazon.com/images/I/71QKQ9KJZJL.jpg' }
+        ];
+
+        // 生成最近一个月的日期
+        function getRecentDates() {
+            const dates = [];
+            const today = new Date();
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            
+            // 生成10个日期
+            for (let i = 0; i < 10; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - (i * 3 + Math.floor(Math.random() * 2)));
+                const day = date.getDate();
+                const month = monthNames[date.getMonth()];
+                dates.push(`${day} ${month}`);
+            }
+            return dates;
+        }
+
+        // 历史交换记录（最近一个月）- 使用本地图片
+        const recentDates = getRecentDates();
+        const exchanges = [
+            {
+                book1: { title: 'Cien años de soledad', cover: '/static/libros-mexico/cien-anos-soledad.jpg', user: 'María' },
+                book2: { title: 'Pedro Páramo', cover: '/static/libros-mexico/pedro-paramo.jpeg', user: 'Carlos' },
+                date: recentDates[0]
+            },
+            {
+                book1: { title: 'Los detectives salvajes', cover: '/static/libros-mexico/detectives-salvajes.png', user: 'Luis' },
+                book2: { title: 'Narrativa completa de Juan Rulfo', cover: '/static/libros-mexico/narrativa-completa.jpg', user: 'Sofía' },
+                date: recentDates[1]
+            },
+            {
+                book1: { title: 'Del amor y otros demonios', cover: '/static/libros-mexico/amor-otros-demonios.jpg', user: 'Ana' },
+                book2: { title: 'La muerte de Artemio Cruz', cover: '/static/libros-mexico/muerte-artemio-cruz.png', user: 'Diego' },
+                date: recentDates[2]
+            },
+            {
+                book1: { title: 'Como agua para chocolate', cover: '/static/libros-mexico/agua-chocolate.jpg', user: 'Isabel' },
+                book2: { title: 'El principito', cover: '/static/libros-mexico/principito.png', user: 'Patricia' },
+                date: recentDates[0] || '15 Ene'
+            },
+            {
+                book1: { title: 'Papeles falsos', cover: '/static/libros-mexico/papeles-falsos.png', user: 'Elena' },
+                book2: { title: 'La historia de mis dientes', cover: '/static/libros-mexico/historia-mis-dientes.png', user: 'Fernando' },
+                date: recentDates[1] || '22 Ene'
+            },
+            {
+                book1: { title: 'Piedra de sol', cover: '/static/libros-mexico/piedra-sol.png', user: 'Paula' },
+                book2: { title: 'El libro de arena', cover: '/static/libros-mexico/libro-arena.png', user: 'Ricardo' },
+                date: recentDates[2] || '28 Ene'
+            },
+            {
+                book1: { title: 'La reina del sur', cover: '/static/libros-mexico/reina-del-sur.png', user: 'Natalia' },
+                book2: { title: 'Los rituales del caos', cover: '/static/libros-mexico/rituales-caos.png', user: 'Lucía' },
+                date: '5 Ene'
+            },
+            {
+                book1: { title: 'La noche de Tlatelolco', cover: '/static/libros-mexico/noche-tlatelolco.png', user: 'Carmen' },
+                book2: { title: 'Hábitos atómicos', cover: '/static/libros-mexico/habitos-atomicos.png', user: 'Javier' },
+                date: '12 Ene'
+            },
+            {
+                book1: { title: 'La región más transparente', cover: '/static/libros-mexico/region-transparente.png', user: 'Roberto' },
+                book2: { title: 'Cien años de soledad', cover: '/static/libros-mexico/cien-anos-soledad.jpg', user: 'María' },
+                date: '19 Ene'
+            },
+            {
+                book1: { title: 'Pedro Páramo', cover: '/static/libros-mexico/pedro-paramo.jpeg', user: 'Carlos' },
+                book2: { title: 'Del amor y otros demonios', cover: '/static/libros-mexico/amor-otros-demonios.jpg', user: 'Sofía' },
+                date: '26 Ene'
+            }
+        ];
+
+        let currentBookIndex = 0;
+        let selectedBookId = null;
+        let uploadedImage = null;
+        let hasSubmittedExchange = false; // 跟踪是否已提交交换
+        // 书籍浏览去重：使用 Set 记录本次会话已浏览的书（避免重复记录）
+        let viewedBooksInSession = new Set();
+
+        // 生成fallback头像（基于用户名首字母）
+        function generateFallbackAvatar(name, size = 32) {
+            // 获取首字母
+            const words = name.split();
+            let initials = '';
+            if (words.length >= 2) {
+                initials = words[0][0].toUpperCase() + words[1][0].toUpperCase();
+            } else if (words.length === 1 && words[0].length > 0) {
+                initials = words[0][0].toUpperCase() + (words[0].length > 1 ? words[0][1].toUpperCase() : words[0][0].toUpperCase());
+            } else {
+                initials = 'U';
+            }
+            
+            // 根据名字生成颜色（确保一致性）
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const r = (hash & 0xFF0000) >> 16;
+            const g = (hash & 0x00FF00) >> 8;
+            const b = hash & 0x0000FF;
+            // 调整颜色范围，使其更柔和（100-200）
+            const bgR = Math.floor((r % 100) + 100);
+            const bgG = Math.floor((g % 100) + 100);
+            const bgB = Math.floor((b % 100) + 100);
+            const bgColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
+            
+            // 生成SVG
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  <rect width="${size}" height="${size}" fill="${bgColor}" rx="${size/2}"/>
+  <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="${size/2.5}" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="central">${initials}</text>
+</svg>`;
+            
+            // 转换为data URI
+            return 'data:image/svg+xml,' + encodeURIComponent(svg);
+        }
+
+        // 头像加载失败处理
+        function handleAvatarError(img, userName) {
+            if (img.src && !img.src.startsWith('data:image/svg+xml')) {
+                // 如果当前不是fallback头像，则切换到fallback
+                img.src = generateFallbackAvatar(userName);
+                img.onerror = null; // 防止无限循环
+            }
+        }
+
+        // 生成或获取匿名用户ID（用于UV统计）
+        function getAnonId() {
+            try {
+                const key = 'td_anon_id';
+                let id = localStorage.getItem(key);
+                if (!id) {
+                    if (window.crypto && crypto.randomUUID) {
+                        id = crypto.randomUUID();
+                    } else {
+                        id = 'td_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+                    }
+                    localStorage.setItem(key, id);
+                }
+                return id;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // 通用埋点函数（改进版：使用 sendBeacon 确保可靠发送）
+        function trackEvent(eventType, payload = {}) {
+            try {
+                const body = {
+                    event_type: eventType,
+                    anon_id: getAnonId(),
+                    book_id: payload.bookId || null,
+                    extra: payload.extra || {}
+                };
+
+                const data = JSON.stringify(body);
+                
+                // 优先使用 sendBeacon（更可靠，即使页面关闭也能发送）
+                if (navigator.sendBeacon) {
+                    const blob = new Blob([data], { type: 'application/json' });
+                    navigator.sendBeacon('/api/track', blob);
+                } else {
+                    // 降级方案：使用 fetch
+                    fetch('/api/track', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: data,
+                        keepalive: true  // 确保请求在页面关闭前完成
+                    }).catch(() => {
+                        // 忽略埋点错误，避免影响用户体验
+                    });
+                }
+            } catch (e) {
+                // 静默失败
+                console.warn('埋点发送失败:', e);
+            }
+        }
+
+        // 初始化
+        function init() {
+            renderBooksList();
+            displayExchanges();
+            // 记录页面浏览
+            trackEvent('page_view', {});
+            setupBookViewObserver();
+        }
+
+        // 渲染图书列表（一次性展示所有图书，支持向下滚动浏览）
+        function renderBooksList() {
+            const bookDisplay = document.getElementById('bookDisplay');
+            if (!bookDisplay) return;
+
+            const cardsHtml = books.map(book => `
+                <div class="book-card" data-book-id="${book.id}">
+                    <div class="book-header">
+                        <img src="${encodeURI(book.cover)}" alt="${book.title}" class="book-cover" loading="lazy" onerror="this.onerror=null; this.style.display='none';">
+                        <div class="book-info">
+                            <div class="book-title">${book.title}</div>
+                            <div class="book-author">por ${book.author}</div>
+                            <div class="user-info">
+                                <img src="${book.user.avatar}" alt="${book.user.name}" class="user-avatar" onerror="handleAvatarError(this, '${book.user.name.replace(/'/g, "\\'")}')">
+                                <div>
+                                    <div class="user-name">${book.user.name}</div>
+                                    <span class="trust-badge">${book.user.trust_badge}</span>
+                                </div>
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2325D366'%3E%3Cpath d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z'/%3E%3C/svg%3E" alt="WhatsApp" class="whatsapp-icon" onclick="openWhatsApp(${book.id})" title="Contactar por WhatsApp">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="why-release">
+                        <h4>Por qué lo recomiendo</h4>
+                        <p>${book.why_release}</p>
+                    </div>
+                    <button class="request-btn book-exchange-btn" onclick="openExchangeModal(${book.id})">
+                        🤝 Solicitar Intercambio por este libro
+                    </button>
+                </div>
+            `).join('');
+
+            bookDisplay.innerHTML = cardsHtml;
+        }
+
+        // 使用 IntersectionObserver 统计用户实际浏览到的书籍，并维护 "当前书"（用于分享）
+        function setupBookViewObserver() {
+            const cards = document.querySelectorAll('#bookDisplay .book-card');
+            if (!cards.length) return;
+
+            // 不支持 IntersectionObserver 时，直接认为所有书都被浏览过一次
+            if (typeof IntersectionObserver === 'undefined') {
+                books.forEach(book => {
+                    if (book && book.id && !viewedBooksInSession.has(book.id)) {
+                        trackEvent('book_view', { bookId: book.id, extra: {} });
+                        viewedBooksInSession.add(book.id);
+                    }
+                });
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const el = entry.target;
+                    const id = parseInt(el.getAttribute('data-book-id'), 10);
+                    if (!id) return;
+
+                    // 记录浏览去重
+                    if (!viewedBooksInSession.has(id)) {
+                        trackEvent('book_view', { bookId: id, extra: {} });
+                        viewedBooksInSession.add(id);
+                    }
+
+                    // 更新当前书索引，供分享/兜底使用
+                    const idx = books.findIndex(b => b.id === id);
+                    if (idx >= 0) {
+                        currentBookIndex = idx;
+                    }
+                });
+            }, {
+                threshold: 0.3
+            });
+
+            cards.forEach(card => observer.observe(card));
+        }
+
+        // 进入线上图书集市（Tianguis）
+        function goToMarket() {
+            window.location.href = '/tianguis';
+        }
+
+        // 显示交换记录
+        function displayExchanges() {
+            const exchangeList = document.getElementById('exchangeList');
+            
+            if (exchanges.length === 0) {
+                exchangeList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🤝</div>
+                        <p>Aún no hay intercambios</p>
+                    </div>
+                `;
+                return;
+            }
+
+            exchangeList.innerHTML = exchanges.map(exchange => `
+                <div style="min-width: 280px; flex-shrink: 0; scroll-snap-align: start;">
+                    <div class="exchange-item">
+                        <div class="exchange-book">
+                            <img src="${encodeURI(exchange.book1.cover)}" alt="${exchange.book1.title}" loading="lazy" onerror="this.onerror=null; this.style.display='none';">
+                            <p>${exchange.book1.title}</p>
+                            <p style="font-size: 10px; color: #6D4C41;">${exchange.book1.user}</p>
+                        </div>
+                        <div class="exchange-icon">🤝</div>
+                        <div class="exchange-book">
+                            <img src="${encodeURI(exchange.book2.cover)}" alt="${exchange.book2.title}" loading="lazy" onerror="this.onerror=null; this.style.display='none';">
+                            <p>${exchange.book2.title}</p>
+                            <p style="font-size: 10px; color: #6D4C41;">${exchange.book2.user}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 打开模态框（可带上目标图书ID）
+        function openModal() {
+            const modal = document.getElementById('exchangeModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // 显示我的图书
+            displayMyBooks();
+            
+            // 重置表单
+            document.getElementById('userStory').value = '';
+            uploadedImage = null;
+            document.getElementById('uploadedImagePreview').style.display = 'none';
+            document.getElementById('uploadedImagePreview').src = '';
+            document.getElementById('imageUploadArea').classList.remove('has-image');
+            document.getElementById('imageUploadArea').querySelector('.upload-icon').style.display = 'block';
+            document.getElementById('imageUploadArea').querySelector('p').textContent = 'Toca para subir una foto';
+            document.getElementById('whatsappDisplay').classList.remove('active');
+            document.getElementById('submitBtn').style.display = 'block';
+            document.getElementById('bookImageInput').value = '';
+        }
+
+        // 从某本书的按钮打开交换弹窗，记录目标图书
+        function openExchangeModal(bookId) {
+            selectedBookId = bookId;
+            openModal();
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            const modal = document.getElementById('exchangeModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // 处理图片上传
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImage = e.target.result;
+                    const preview = document.getElementById('uploadedImagePreview');
+                    const uploadArea = document.getElementById('imageUploadArea');
+                    preview.src = uploadedImage;
+                    preview.style.display = 'block';
+                    uploadArea.classList.add('has-image');
+                    uploadArea.querySelector('.upload-icon').style.display = 'none';
+                    uploadArea.querySelector('p').textContent = 'Toca para cambiar la foto';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 提交交换申请
+        function submitExchange() {
+            const story = document.getElementById('userStory').value.trim();
+            
+            if (!story || story.length < 20) {
+                alert('Por favor, escribe al menos 20 palabras en tu historia.');
+                return;
+            }
+
+            if (!uploadedImage) {
+                alert('Por favor, sube una foto de tu libro.');
+                return;
+            }
+
+            // 标记已提交交换
+            hasSubmittedExchange = true;
+            
+            // 显示WhatsApp联系方式
+            document.getElementById('whatsappDisplay').classList.add('active');
+            document.getElementById('submitBtn').style.display = 'none';
+            
+            // 重新显示当前图书以显示WhatsApp图标
+            displayBook(currentBookIndex);
+
+            // 确定目标图书ID（优先使用用户点击的那本）
+            const targetBookId = selectedBookId || (books[currentBookIndex] && books[currentBookIndex].id);
+
+            // 这里可以发送到后端（目前仅在控制台打印）
+            console.log('Intercambio solicitado:', {
+                bookId: targetBookId,
+                story: story,
+                image: '[imagen subida]'
+            });
+
+            // 记录提交交换事件（带上故事摘要等信息，方便后台查看）
+            // 确保 has_image 正确记录：检查 uploadedImage 是否有实际内容
+            const hasImage = uploadedImage && uploadedImage.length > 0 && uploadedImage.startsWith('data:image');
+            trackEvent('exchange_request', {
+                bookId: targetBookId,
+                extra: {
+                    story_snippet: story.substring(0, 120),
+                    story_length: story.length,
+                    has_image: hasImage
+                }
+            });
+        }
+
+        // 打开WhatsApp
+        function openWhatsApp(bookId) {
+            // 先记录埋点（在 window.open 之前，确保可靠发送）
+            const targetId = bookId || (books[currentBookIndex] && books[currentBookIndex].id);
+            const currentBook = books.find(b => b.id === targetId) || books[currentBookIndex];
+            trackEvent('whatsapp_click', {
+                bookId: currentBook ? currentBook.id : targetId
+            });
+            
+            // 然后打开 WhatsApp（如果是从链接点击，允许默认行为也执行）
+            const message = encodeURIComponent(`Hola, me interesa intercambiar el libro "${currentBook ? currentBook.title : ''}"`);
+            window.open(`https://wa.me/971509216685?text=${message}`, '_blank');
+        }
+
+        // 分享功能
+        function shareBook() {
+            const book = books[currentBookIndex];
+            const shareText = `📚 ${book.title} – ${book.author}\n\n"${book.why_release.substring(0, 110)}..."\n\n🔥 ¡Oye, compa! ¿Tienes libros que ya leíste y quieres darles nueva vida? En Trueque Digital puedes intercambiarlos por historias increíbles con lectores de CDMX y de todo México. ¡No te lo pierdas! Dale clic y encuentra tu próximo libro:\n\n${window.location.href}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: `📚 ${book.title}`,
+                    text: shareText,
+                    url: window.location.href
+                }).then(() => {
+                    // 仅在分享成功回调中记录
+                    trackEvent('share', {
+                        bookId: book.id
+                    });
+                }).catch(err => console.log('Error sharing', err));
+            } else {
+                // 降级方案：复制到剪贴板
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('¡Texto copiado! Compártelo donde quieras.');
+                    // 复制成功也认为是一次分享行为
+                    trackEvent('share', {
+                        bookId: book.id
+                    });
+                }).catch(() => {
+                    // 最终降级：显示文本让用户手动复制
+                    prompt('Copia este texto para compartir:', shareText);
+                });
+            }
+        }
+
+        // 点击模态框外部关闭
+        document.getElementById('exchangeModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // ESC键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // 页面加载时初始化
+        init();
+    </script>
+</body>
+</html>

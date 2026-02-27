@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tianguis de Libros - Trueque Digital</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #F5E6D3;
+            color: #3E2723;
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 18px 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 6px;
+            color: #2C5F2D;
+        }
+        .header p {
+            font-size: 13px;
+            color: #6D4C41;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #2C5F2D;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+        .back-link span {
+            font-size: 18px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 14px 0 8px;
+            color: #3E2723;
+        }
+        .hint {
+            font-size: 12px;
+            color: #6D4C41;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 2px solid #E8D5B7;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2C5F2D;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
+            background: #2C5F2D;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .submit-btn:disabled {
+            background: #95A5A6;
+            cursor: not-allowed;
+        }
+        .image-upload-area {
+            border: 2px dashed #E8D5B7;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 8px;
+        }
+        .image-upload-area:hover {
+            border-color: #2C5F2D;
+            background: #FAF5ED;
+        }
+        .image-upload-area.has-image {
+            border-style: solid;
+            padding: 10px;
+        }
+        .upload-icon {
+            font-size: 32px;
+            color: #6D4C41;
+            margin-bottom: 6px;
+        }
+        .uploaded-image {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 8px;
+            margin-top: 6px;
+        }
+        .market-list {
+            margin-top: 4px;
+        }
+        .market-item {
+            border-bottom: 1px solid #E8D5B7;
+            padding: 10px 0;
+        }
+        .market-item:last-child {
+            border-bottom: none;
+        }
+        .item-image {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+        .item-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #2C5F2D;
+        }
+        .item-meta {
+            font-size: 11px;
+            color: #8D6E63;
+            margin-bottom: 6px;
+        }
+        .item-desc {
+            font-size: 13px;
+            color: #4E342E;
+            margin-bottom: 6px;
+            white-space: pre-wrap;
+        }
+        .wa-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 16px;
+            border: none;
+            background: #25D366;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .wa-btn span {
+            font-size: 16px;
+        }
+        .empty-tip {
+            text-align: center;
+            font-size: 13px;
+            color: #6D4C41;
+            padding: 20px 10px 10px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2C5F2D;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: none;
+            z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">
+            <span>←</span> Volver a mis libros recomendados
+        </a>
+
+        <div class="header">
+            <h1>🏪 Tianguis de Libros</h1>
+            <p>Un tianguis digital donde los compas suben los libros que quieren intercambiar. Si algo te late, mándale WhatsApp directo.</p>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Sube tu libro al tianguis</div>
+            <p class="hint">Cuenta brevemente qué libro ofreces y por qué lo recomiendas. Sube una foto y deja tu número de WhatsApp para que otros te contacten.</p>
+
+            <div class="form-group">
+                <label>Título del libro *</label>
+                <input id="titleInput" type="text" maxlength="200" placeholder="Ej. Cien años de soledad">
+            </div>
+            <div class="form-group">
+                <label>Tu mensaje para los compas *</label>
+                <textarea id="descInput" maxlength="2000" placeholder="Cuéntales por qué recomiendas este libro o en qué estado está..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Foto del libro *</label>
+                <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('bookImageInput').click()">
+                    <div class="upload-icon">📷</div>
+                    <p style="color: #6D4C41; font-size: 13px;">Toca para subir una foto</p>
+                    <img id="uploadedImagePreview" class="uploaded-image" style="display: none;">
+                </div>
+                <input type="file" id="bookImageInput" accept="image/*" style="display:none;">
+            </div>
+            <div class="form-group">
+                <label>Tu WhatsApp (con lada) *</label>
+                <input id="waInput" type="text" maxlength="50" placeholder="Ej. +52 55 1234 5678">
+            </div>
+            <div class="form-group">
+                <label>Ciudad (opcional)</label>
+                <input id="cityInput" type="text" maxlength="100" placeholder="Ej. CDMX, Guadalajara, Monterrey...">
+            </div>
+            <button class="submit-btn" id="publishBtn">📚 Publicar en el tianguis</button>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Libros de otros compas</div>
+            <div class="market-list" id="marketList">
+                <div class="empty-tip">Aún no hay libros en el tianguis. ¡Sé el primero en subir uno! ✨</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2200);
+        }
+
+        async function fetchMarketItems() {
+            try {
+                const res = await fetch('/api/market/list');
+                const data = await res.json();
+                if (!data.success) return;
+                const list = document.getElementById('marketList');
+                const items = data.items || [];
+                if (!items.length) {
+                    list.innerHTML = '<div class="empty-tip">Aún no hay libros en el tianguis. ¡Sé el primero en subir uno! ✨</div>';
+                    return;
+                }
+                list.innerHTML = items.map(item => {
+                    const safeTitle = (item.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const safeDesc = (item.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const safeCity = (item.city || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const image = item.image || '';
+                    const wa = (item.whatsapp || '').trim();
+                    const waLink = wa ? 'https://wa.me/' + wa.replace(/[^0-9+]/g, '') : '';
+                    const createdAt = item.created_at ? new Date(item.created_at) : null;
+                    const dateStr = createdAt ? createdAt.toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+                    return `
+                        <div class="market-item">
+                            ${image ? `<img class="item-image" src="${image}" alt="${safeTitle}">` : ''}
+                            <div class="item-title">${safeTitle}</div>
+                            <div class="item-meta">
+                                ${safeCity ? safeCity + ' · ' : ''}${dateStr ? dateStr : ''}
+                            </div>
+                            <div class="item-desc">${safeDesc}</div>
+                            ${waLink ? `
+                            <a class="wa-btn" href="${waLink}" target="_blank" onclick="trackMarketWhatsApp(${item.id});">
+                                <span>📲</span> Hablar por WhatsApp
+                            </a>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error('Error cargando el tianguis:', e);
+            }
+        }
+
+        let uploadedImage = null;
+
+        document.getElementById('bookImageInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const maxSize = 1024 * 1024 * 1.5; // 1.5MB
+            if (file.size > maxSize) {
+                showToast('La imagen es muy pesada (máx 1.5MB).');
+                event.target.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                uploadedImage = e.target.result;
+                const preview = document.getElementById('uploadedImagePreview');
+                const area = document.getElementById('imageUploadArea');
+                preview.src = uploadedImage;
+                preview.style.display = 'block';
+                area.classList.add('has-image');
+                area.querySelector('.upload-icon').style.display = 'none';
+                area.querySelector('p').textContent = 'Toca para cambiar la foto';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        async function publishItem() {
+            const btn = document.getElementById('publishBtn');
+            if (btn.disabled) return;
+            const title = document.getElementById('titleInput').value.trim();
+            const desc = document.getElementById('descInput').value.trim();
+            const wa = document.getElementById('waInput').value.trim();
+            const city = document.getElementById('cityInput').value.trim();
+
+            if (!title || !desc || !wa || !uploadedImage) {
+                showToast('Por favor llena título, mensaje, WhatsApp y sube una foto.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Publicando...';
+            try {
+                const res = await fetch('/api/market/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        description: desc,
+                        whatsapp: wa,
+                        city,
+                        image: uploadedImage
+                    })
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    showToast('Error al publicar. Intenta de nuevo.');
+                } else {
+                    showToast('¡Listo! Tu libro ya está en el tianguis.');
+                    // 清空表单
+                    document.getElementById('titleInput').value = '';
+                    document.getElementById('descInput').value = '';
+                    document.getElementById('waInput').value = '';
+                    document.getElementById('cityInput').value = '';
+                     // 清空图片
+                    uploadedImage = null;
+                    const preview = document.getElementById('uploadedImagePreview');
+                    const area = document.getElementById('imageUploadArea');
+                    const input = document.getElementById('bookImageInput');
+                    preview.src = '';
+                    preview.style.display = 'none';
+                    area.classList.remove('has-image');
+                    area.querySelector('.upload-icon').style.display = 'block';
+                    area.querySelector('p').textContent = 'Toca para subir una foto';
+                    input.value = '';
+                    // 重新加载列表
+                    fetchMarketItems();
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('Error de red. Intenta de nuevo.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📚 Publicar en el tianguis';
+            }
+        }
+
+        function trackMarketWhatsApp(itemId) {
+            try {
+                navigator.sendBeacon('/api/track', new Blob([JSON.stringify({
+                    event_type: 'market_whatsapp_click',
+                    book_id: null,
+                    anon_id: null,
+                    extra: { market_item_id: itemId }
+                })], { type: 'application/json' }));
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        function trackMarketPageView() {
+            try {
+                navigator.sendBeacon('/api/track', new Blob([JSON.stringify({
+                    event_type: 'market_page_view',
+                    book_id: null,
+                    anon_id: null,
+                    extra: {}
+                })], { type: 'application/json' }));
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        document.getElementById('publishBtn').addEventListener('click', publishItem);
+        // 初始化
+        trackMarketPageView();
+        fetchMarketItems();
+    </script>
+</body>
+</html>
+

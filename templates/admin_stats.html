@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <title>Trueque Digital - Estadísticas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #F5E6D3;
+            color: #3E2723;
+            padding: 20px;
+        }
+        .card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #2C5F2D;
+        }
+        h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #2C5F2D;
+        }
+        .metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .metric {
+            background: #FAF5ED;
+            border-radius: 10px;
+            padding: 12px 16px;
+            min-width: 140px;
+        }
+        .metric-label {
+            font-size: 13px;
+            color: #6D4C41;
+            margin-bottom: 4px;
+        }
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2C5F2D;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 13px;
+        }
+        th {
+            background: #F5E6D3;
+        }
+        tr:nth-child(even) {
+            background: #FAF5ED;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>📊 Trueque Digital - Estadísticas básicas</h1>
+        <p style="font-size: 13px; color: #6D4C41;">
+            Vista rápida de PV / UV 以及核心行为数据（基于 /api/track 埋点）。
+        </p>
+        <p style="font-size: 12px; color: #999; margin-top: 10px;">
+            🔗 <a href="/admin/stats?token={{ token }}" style="color: #2C5F2D;">Enlace directo con token</a>
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>🚇 地铁交易 · 关键指标</h2>
+        <div class="metrics">
+            <div class="metric">
+                <div class="metric-label">PV 总浏览量</div>
+                <div class="metric-value">{{ stats.total_pv }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">UV 独立访客数</div>
+                <div class="metric-value">{{ stats.total_uv }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">喜欢/收藏次数</div>
+                <div class="metric-value">{{ stats.metro_favorite_count }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">点击联系次数</div>
+                <div class="metric-value">{{ stats.metro_contact_click_count }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">点击上传(发布)次数</div>
+                <div class="metric-value">{{ stats.metro_publish_click_count }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">提交成功次数</div>
+                <div class="metric-value">{{ stats.metro_publish_success_count }}</div>
+            </div>
+        </div>
+        <p style="font-size: 12px; color: #999; margin-top: 12px;">若部署在 Vercel 且未配置 DATABASE_URL，数据仅存内存，实例休眠后会丢失。请配置 Neon/Postgres 等 DATABASE_URL 以持久化埋点。</p>
+    </div>
+
+    <div class="card">
+        <h2>其他（图书等）</h2>
+        <div class="metrics">
+            <div class="metric">
+                <div class="metric-label">分享次数 (share)</div>
+                <div class="metric-value">{{ stats.share_count }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">提交交换申请次数</div>
+                <div class="metric-value">{{ stats.exchange_request_count }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">WhatsApp 点击次数</div>
+                <div class="metric-value">{{ stats.whatsapp_click_count }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">书籍总浏览次数</div>
+                <div class="metric-value">{{ stats.book_view_count }}</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">被浏览过的不同书本数</div>
+                <div class="metric-value">{{ stats.book_view_unique_books }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>最近 30 天 PV / UV</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>PV</th>
+                    <th>UV</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in daily %}
+                <tr>
+                    <td>{{ row.day }}</td>
+                    <td>{{ row.pv }}</td>
+                    <td>{{ row.uv }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" style="color:#6D4C41;">暂无数据</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>最近提交明细（最多 50 条）</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>时间</th>
+                    <th>书名</th>
+                    <th>IP</th>
+                    <th>故事摘要</th>
+                    <th>是否有图片</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in recent_submits %}
+                <tr>
+                    <td>{{ item.created_at }}</td>
+                    <td>{{ item.book_title or ('#' ~ item.book_id) }}</td>
+                    <td>{{ item.ip or '-' }}</td>
+                    <td>{{ item.story_snippet }}</td>
+                    <td>{{ '是' if item.has_image else '否' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="color:#6D4C41;">暂无提交记录</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+
+
