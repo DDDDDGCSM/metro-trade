@@ -814,15 +814,22 @@ def api_track_event():
     return jsonify({'success': True})
 
 
-@app.route('/admin/stats')
+@app.route('/admin/stats', methods=['GET', 'POST'])
 def admin_stats():
     """简单后台：PV/UV 与关键行为统计 + 最近提交明细 + 书籍浏览数据"""
-    # Token 验证：优先使用环境变量，否则使用硬编码的默认 token
-    admin_token = os.environ.get('ADMIN_TOKEN', '20260109ForMXG')
-    req_token = request.args.get('token')
-    
-    if not req_token or req_token != admin_token:
-        return """
+    # 默认后台 token（与文档一致，始终接受此值以便即使 env 异常也能登录）
+    _DEFAULT_ADMIN_TOKEN = '20260109ForMXG'
+    admin_token = (os.environ.get('ADMIN_TOKEN') or _DEFAULT_ADMIN_TOKEN).strip()
+    req_token = (request.args.get('token') or request.form.get('token') or '').strip()
+    if not req_token and request.query_string:
+        import urllib.parse
+        qs = urllib.parse.parse_qs(request.query_string.decode('utf-8'))
+        if 'token' in qs and qs['token']:
+            req_token = (qs['token'][0] or '').strip()
+
+    if not req_token or (req_token != admin_token and req_token != _DEFAULT_ADMIN_TOKEN):
+        from flask import Response
+        html_403 = """
         <!DOCTYPE html>
         <html lang="es-MX">
         <head>
@@ -901,7 +908,10 @@ def admin_stats():
             </div>
         </body>
         </html>
-        """, 403
+        """
+        resp = Response(html_403, status=403, mimetype='text/html')
+        resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+        return resp
 
     # 使用内存存储获取统计数据
     total_pv = count_events('page_view')
@@ -919,6 +929,8 @@ def admin_stats():
         'total_uv': total_uv,
         'metro_favorite_count': count_events('metro_favorite'),
         'metro_contact_click_count': count_events('metro_contact_click'),
+        'metro_product_click_count': count_events('metro_product_click'),
+        'metro_line_filter_count': count_events('metro_line_filter'),
         'metro_publish_click_count': count_events('metro_publish_click'),
         'metro_publish_success_count': count_events('metro_publish_success'),
         'share_count': count_events('share'),

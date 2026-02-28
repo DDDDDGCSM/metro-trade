@@ -922,6 +922,7 @@
             container.querySelectorAll('.tab').forEach(btn => {
                 btn.addEventListener('click', () => {
                     currentMetro = btn.getAttribute('data-metro');
+                    trackEvent('metro_line_filter', { line: currentMetro });
                     container.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     fetchAndRender(currentMetro);
@@ -1004,6 +1005,13 @@
                 btn.addEventListener('click', function() {
                     var card = this.closest('[data-product-id]');
                     if (card) trackEvent('metro_contact_click', { product_id: parseInt(card.getAttribute('data-product-id'), 10) });
+                });
+            });
+            grid.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('.heart-btn') || e.target.closest('.contact-btn')) return;
+                    var id = parseInt(this.getAttribute('data-product-id'), 10);
+                    if (id) trackEvent('metro_product_click', { product_id: id });
                 });
             });
         }
