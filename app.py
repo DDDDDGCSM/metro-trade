@@ -528,6 +528,42 @@ def get_distinct_ips(event_type: str) -> set:
                 ips.add(e['ip'])
         return ips
 
+
+def get_distinct_ips_since(event_type: str, since_date: str) -> set:
+    """获取某日期之后的独立访客 IP 集合（用于按上线日期统计 UV）"""
+    db_conn = _get_db_connection()
+    if db_conn:
+        try:
+            cursor = db_conn.cursor()
+            cursor.execute(
+                '''
+                SELECT DISTINCT ip
+                FROM book_exchange_events
+                WHERE event_type = %s
+                  AND ip IS NOT NULL AND ip != %s
+                  AND created_at >= %s
+                ''',
+                (event_type, '', since_date),
+            )
+            ips = {row[0] for row in cursor.fetchall()}
+            cursor.close()
+            return ips
+        except Exception as e:
+            print(f'⚠️ 数据库查询失败（get_distinct_ips_since）: {e}')
+
+    # 回退到内存存储
+    storage = get_analytics_storage()
+    with storage['lock']:
+        ips = set()
+        for e in storage['events']:
+            if (
+                e['event_type'] == event_type
+                and e.get('ip')
+                and str(e.get('created_at', ''))[:10] >= since_date
+            ):
+                ips.add(e['ip'])
+        return ips
+
 def get_daily_stats(days: int = 30):
     """获取按天统计的 PV/UV（优先从数据库，否则从内存）"""
     # 优先使用数据库
@@ -913,14 +949,19 @@ def admin_stats():
         resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
         return resp
 
-    # 使用内存存储获取统计数据
-    total_pv = count_events('page_view')
-    # UV 使用 IP 维度，便于内部核对
-    total_uv = len(get_distinct_ips('page_view'))
-    
-    # 书籍浏览统计
+    # Metro Trade 上线日期，用于过滤老数据（仅展示上线以来的数据）
+    METRO_LAUNCH_DATE = '2026-02-27'
+
+    # 按天聚合 PV/UV（最近30天），再按上线日期过滤
+    daily_all = get_daily_stats(30)
+    daily = [row for row in daily_all if row.get('day', '') >= METRO_LAUNCH_DATE]
+
+    # 使用聚合结果计算总 PV；UV 使用 IP 维度，但仅统计上线以来的独立 IP
+    total_pv = sum(row.get('pv', 0) for row in daily)
+    total_uv = len(get_distinct_ips_since('page_view', METRO_LAUNCH_DATE))
+
+    # 书籍浏览统计（仍然保留全部历史，用于兼容旧数据）
     total_book_views = count_events('book_view')
-    # 被浏览过的不同书本数
     book_view_events = get_events('book_view')
     viewed_book_ids = {e.get('book_id') for e in book_view_events if e.get('book_id') is not None}
     
@@ -939,9 +980,6 @@ def admin_stats():
         'book_view_count': total_book_views,
         'book_view_unique_books': len(viewed_book_ids),
     }
-    
-    # 按天聚合 PV/UV（最近30天）
-    daily = get_daily_stats(30)
 
     # 最近提交明细（最多 50 条，按时间倒序）
     recent_submits = []
