@@ -15,7 +15,14 @@ except ImportError:
     raise
 
 ROOT = Path(__file__).resolve().parent.parent
-EXCEL_PATH = ROOT.parent / "地铁交易-供给.xlsx"
+
+# 优先使用你最新的 Excel（带 (1) 的文件），若不存在则回退到旧文件名
+_EXCEL_CANDIDATES = [
+    ROOT.parent / "地铁交易-供给 (1).xlsx",
+    ROOT.parent / "地铁交易-供给.xlsx",
+]
+EXCEL_PATH = next((p for p in _EXCEL_CANDIDATES if p.exists()), _EXCEL_CANDIDATES[0])
+
 OUT_PATH = ROOT / "static" / "data" / "products.json"
 
 
@@ -31,6 +38,27 @@ def parse_metro_lines(cell):
     if not parts:
         return ["all"]
     return list(dict.fromkeys(parts))  # unique order preserved
+
+
+def normalize_contact(value: str) -> str:
+    """
+    归一化联系方式：
+    - 若是 http/https 开头，原样返回（已是完整链接）
+    - 若是纯号码（可带 +、空格、-），自动转为 WhatsApp 链接：https://wa.me/号码
+    - 其它情况（如用户名）直接返回原值
+    """
+    if not value:
+        return ""
+    s = str(value).strip()
+    if s.lower().startswith(("http://", "https://")):
+        return s
+    # 只保留数字和前导 +
+    num = re.sub(r"[^\d+]", "", s)
+    # 简单判定为电话号码：至少 6 位数字
+    digits = re.sub(r"\D", "", num)
+    if len(digits) >= 6:
+        return f"https://wa.me/{digits}"
+    return s
 
 
 def row_to_product(i, row):
@@ -56,11 +84,13 @@ def row_to_product(i, row):
             description = ""
     image = row.get("图片", row.iloc[3])
     image = "" if pd.isna(image) else str(image).strip()
-    # 第五列：联系方式（主链接）
+    # 第五列：联系方式（主号码或链接）
     col4 = row.iloc[4] if len(row) > 4 else None
-    contact_link = "" if pd.isna(col4) else str(col4).strip()
+    contact_link_raw = "" if pd.isna(col4) else str(col4).strip()
+    contact_link = normalize_contact(contact_link_raw)
     col5 = row.get("联系方式跳转链接", row.iloc[5] if len(row) > 5 else None)
-    contact_link_2 = "" if pd.isna(col5) else str(col5).strip()
+    contact_link_2_raw = "" if pd.isna(col5) else str(col5).strip()
+    contact_link_2 = normalize_contact(contact_link_2_raw)
     return {
         "id": i + 1,
         "metro_lines": metro_lines,
