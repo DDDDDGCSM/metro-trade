@@ -33,10 +33,17 @@ def get_extension(url, content_type):
 
 
 def download_image(url, dest_path):
+    """
+    下载图片：
+    - 只接受 Content-Type 里包含 image 的响应
+    - 若返回 HTML 等非图片内容，则抛出异常，调用方会跳过该图片
+    """
     req = Request(url, headers={"User-Agent": "MetroTrade/1.0"})
     with urlopen(req, timeout=15) as r:
-        content_type = r.headers.get("Content-Type", "")
+        content_type = (r.headers.get("Content-Type", "") or "").lower()
         data = r.read()
+    if "image" not in content_type:
+        raise ValueError(f"Non-image content-type: {content_type or 'unknown'}")
     ext = get_extension(url, content_type)
     path = dest_path.with_suffix(ext)
     path.write_bytes(data)
@@ -67,7 +74,8 @@ def main():
             path = download_image(img, IMAGES_DIR / str(pid))
             p["image"] = f"/static/product-images/{path.name}"
             updated += 1
-        except (URLError, HTTPError, OSError) as e:
+        except (URLError, HTTPError, OSError, ValueError) as e:
+            # 若下载失败或返回非图片内容，则保留原始远程 URL，前端将直接访问原站
             print(f"  Skip id={pid}: {e}")
             failed += 1
     with open(JSON_PATH, "w", encoding="utf-8") as f:
