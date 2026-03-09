@@ -49,17 +49,25 @@ def load_metro_products():
             print(f"⚠️ Error leyendo {json_path.name}: {e}")
     else:
         print("⚠️ No se encontró metro_products.json ni static/data/products.json")
-    # 追加清洗后的 Facebook 帖子商品（可直接展示）
+    # 追加清洗后的 Facebook 帖子商品：优先用 JSON 文件，不存在则用代码内嵌数据（保证 Vercel 部署必有数据）
+    fb_list = []
     fb_path = app_root / "static" / "data" / "facebook_products.json"
     try:
         if fb_path.exists():
             with open(fb_path, "r", encoding="utf-8") as f:
                 fb_data = json.load(f)
             fb_list = fb_data.get("products", [])
-            METRO_PRODUCTS = METRO_PRODUCTS + fb_list
-            print(f"✅ Añadidos {len(fb_list)} productos de Facebook (facebook_products.json)")
     except Exception as e:
         print(f"⚠️ Error leyendo facebook_products.json: {e}")
+    if not fb_list:
+        try:
+            from facebook_products_data import FACEBOOK_PRODUCTS
+            fb_list = FACEBOOK_PRODUCTS or []
+        except Exception as e:
+            print(f"⚠️ Error cargando Facebook products embebidos: {e}")
+    if fb_list:
+        METRO_PRODUCTS = METRO_PRODUCTS + fb_list
+        print(f"✅ Añadidos {len(fb_list)} productos de Facebook")
 
 
 def _product_matches_metro(p, metro):
