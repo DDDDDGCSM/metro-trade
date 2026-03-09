@@ -250,6 +250,9 @@
             background: linear-gradient(180deg, #A0522D, #8B4513);
             color: #FFF;
         }
+        .product-card.broken-hidden {
+            display: none !important;
+        }
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -321,18 +324,35 @@
             border-color: #c0392b;
         }
         .product-image {
+            position: absolute;
+            inset: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 180ms ease;
         }
         .product-image-placeholder {
-            width: 100%;
-            height: 100%;
+            position: absolute;
+            inset: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #A0522D;
             font-size: 48px;
+            background: #F5E6D3;
+            z-index: 1;
+            opacity: 1;
+            transition: opacity 180ms ease;
+        }
+        .product-image-wrap.img-loaded .product-image {
+            opacity: 1;
+        }
+        .product-image-wrap.img-loaded .product-image-placeholder {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
         }
         .product-body {
             padding: 14px;
@@ -393,6 +413,81 @@
         }
         .contact-btn:active {
             transform: scale(0.98);
+        }
+        .product-actions {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .product-actions .contact-btn {
+            flex: 1;
+        }
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 2px solid #E8D5B7;
+            background: #FFF;
+            color: #5D4E37;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, background 0.2s;
+            font-family: inherit;
+        }
+        .share-btn:hover {
+            background: #F5E6D3;
+            opacity: 0.95;
+        }
+        .share-btn:active {
+            transform: scale(0.98);
+        }
+        .report-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #6D4C41;
+            background: transparent;
+            border: 1px solid #d3d6da;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .report-btn:hover {
+            background: #f6f7f8;
+        }
+        .form-hint {
+            font-size: 12px;
+            color: #6D4C41;
+            margin-top: 6px;
+        }
+        .disclaimer-box {
+            background: #f6f7f8;
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+        .disclaimer-box p {
+            margin: 0;
+            font-size: 12px;
+            color: #5D4E37;
+        }
+        .site-footer {
+            margin-top: 24px;
+            padding: 16px;
+            background: #E8D5B7;
+            border-radius: 12px;
+            margin-left: 12px;
+            margin-right: 12px;
+            margin-bottom: 20px;
+        }
+        .site-footer p {
+            margin: 0;
+            font-size: 11px;
+            color: #5D4E37;
+            line-height: 1.5;
         }
         .empty-state {
             text-align: center;
@@ -546,6 +641,16 @@
             opacity: 0.6;
             cursor: not-allowed;
         }
+        .restore-hidden-btn {
+            padding: 10px 16px;
+            font-size: 14px;
+            color: #5D4E37;
+            background: #E8D5B7;
+            border: 1px solid #c4a574;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .restore-hidden-btn:hover { background: #ddc9a8; }
         .toast {
             position: fixed;
             bottom: 96px;
@@ -616,9 +721,10 @@
             <div id="productArea">
                 <div class="loading" id="loadingState" data-i18n="loading">Cargando...</div>
                 <div class="products-grid" id="productsGrid" style="display: none;"></div>
+                <p id="emptyStateRestore" style="display:none; margin-top:12px; margin-bottom:0;"><button type="button" class="restore-hidden-btn" id="btnRestoreHidden">Restablecer productos ocultos</button></p>
                 <div class="empty-state" id="emptyState" style="display: none;">
                     <div class="icon">📭</div>
-                    <p data-i18n="empty">No hay productos en esta línea por ahora.</p>
+                    <p id="emptyStateText" data-i18n="empty">No hay productos en esta línea por ahora.</p>
                 </div>
             </div>
         </div>
@@ -685,8 +791,8 @@
                         <textarea id="pDesc" maxlength="2000" placeholder=""></textarea>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="labelPrice">Precio (número o 0 = gratis)</label>
-                        <input type="text" id="pPrice" maxlength="20" placeholder="0" value="0">
+                        <label data-i18n="labelPrice">Precio (número; no se permiten "gratis" ni 1-2 pesos)</label>
+                        <input type="text" id="pPrice" maxlength="20" placeholder="Ej: 50" value="">
                     </div>
                     <div class="form-group">
                         <label data-i18n="labelMetro">Líneas donde puedes entregar *</label>
@@ -699,10 +805,14 @@
                             <img id="imagePreview" style="display:none; margin:0 auto;" alt="">
                         </div>
                         <input type="file" id="imageInput" accept="image/*" style="display:none">
+                        <p class="form-hint" data-i18n="imageDisclaimer">Si la imagen no se muestra bien, el producto se ocultará. Cambia la foto y vuelve a publicar.</p>
+                    </div>
+                    <div class="form-group disclaimer-box">
+                        <p data-i18n="prohibitedDisclaimer"><strong>No se permiten artículos prohibidos.</strong> Si la plataforma lo detecta, se dará de baja de inmediato.</p>
                     </div>
                     <div class="form-group">
                         <label data-i18n="labelContact">Enlace de contacto (WhatsApp / Messenger) *</label>
-                        <input type="url" id="pContact" placeholder="" required>
+                        <input type="text" id="pContact" placeholder="" required autocomplete="tel">
                     </div>
                     <button type="submit" class="modal-submit" id="publishSubmit" data-i18n="submitPublish">Publicar</button>
                 </form>
@@ -710,6 +820,9 @@
         </div>
     </div>
 
+    <footer class="site-footer">
+        <p><strong>Aviso:</strong> No se permiten artículos prohibidos. Si la plataforma lo detecta, se dará de baja de inmediato. Si la imagen de un producto no se muestra, se ocultará; cambia la foto y vuelve a publicar. La plataforma solo muestra información; las transacciones son entre usuarios.</p>
+    </footer>
     <div class="toast" id="toast"></div>
 
     <script>
@@ -726,12 +839,20 @@
                 contactMe: 'Contáctame',
                 loading: 'Cargando...',
                 empty: 'No hay productos en esta línea por ahora.',
+                emptyHidden: 'Se ocultaron productos con imagen no cargada. Puedes restablecer la lista.',
+                restoreHidden: 'Restablecer productos ocultos',
                 priceFree: 'Gratis',
                 priceLabel: '$',
                 modalTitle: 'Publicar producto',
                 labelTitle: 'Título / Nombre del producto *',
                 labelDesc: 'Descripción',
-                labelPrice: 'Precio (número o 0 = gratis)',
+                labelPrice: 'Precio (número; no se permiten "gratis" ni 1-2 pesos)',
+                imageDisclaimer: 'Si la imagen no se muestra bien, el producto se ocultará. Cambia la foto y vuelve a publicar.',
+                prohibitedDisclaimer: 'No se permiten artículos prohibidos. Si la plataforma lo detecta, se dará de baja de inmediato.',
+                reportBtn: 'Reportar',
+                reportSent: 'Reporte enviado. Revisaremos y actuaremos si procede.',
+                priceWarning: 'No se permiten precios "gratis" o 1-2 pesos. Indica un precio real o escribe "Consultar".',
+                contactInvalid: 'Ingresa un enlace (WhatsApp/Messenger) o tu número de teléfono.',
                 labelMetro: 'Líneas donde puedes entregar *',
                 labelImage: 'Foto del producto *',
                 imageHint: 'Toca para subir una foto',
@@ -747,12 +868,14 @@
                 noFavorites: 'Aún no tienes favoritos.',
                 labelFav: 'Guardar',
                 labelFaved: 'Guardado',
+                shareBtn: 'Compartir',
+                shareCopied: 'Enlace copiado',
                 ariaLabelRemoveFav: 'Quitar favorito',
                 ariaLabelAddFav: 'Añadir a favoritos',
                 modalClose: 'Cerrar',
                 placeholderTitle: 'Ej. iPhone 12',
                 placeholderDesc: 'Detalles, estado, etc.',
-                placeholderContact: 'https://wa.me/52...',
+                placeholderContact: 'Enlace (wa.me/…) o número de teléfono',
                 navAria: 'Navegación',
                 publishBtnTitle: 'Publicar',
                 sellBtn: 'Vender'
@@ -767,12 +890,20 @@
                 contactMe: 'Contact me',
                 loading: 'Loading...',
                 empty: 'No products on this line right now.',
+                emptyHidden: 'Products with unloaded images were hidden. You can restore the list.',
+                restoreHidden: 'Restore hidden products',
                 priceFree: 'Free',
                 priceLabel: '$',
                 modalTitle: 'Publish product',
                 labelTitle: 'Title / Product name *',
                 labelDesc: 'Description',
-                labelPrice: 'Price (number or 0 = free)',
+                labelPrice: 'Price (number; "free" and 1-2 pesos not allowed)',
+                imageDisclaimer: 'If the image does not display, the product will be hidden. Change the photo and republish.',
+                prohibitedDisclaimer: 'Prohibited items are not allowed. If the platform finds them, they will be removed immediately.',
+                reportBtn: 'Report',
+                reportSent: 'Report submitted. We will review and take action if needed.',
+                priceWarning: 'Prices "free" or 1-2 pesos are not allowed. Enter a real price or "Consult".',
+                contactInvalid: 'Enter a link (WhatsApp/Messenger) or your phone number.',
                 labelMetro: 'Lines where you can meet *',
                 labelImage: 'Product photo *',
                 imageHint: 'Tap to upload a photo',
@@ -788,12 +919,14 @@
                 noFavorites: 'No favorites yet.',
                 labelFav: 'Favorite',
                 labelFaved: 'Saved',
+                shareBtn: 'Share',
+                shareCopied: 'Link copied',
                 ariaLabelRemoveFav: 'Remove from favorites',
                 ariaLabelAddFav: 'Add to favorites',
                 modalClose: 'Close',
                 placeholderTitle: 'e.g. iPhone 12',
                 placeholderDesc: 'Details, condition, etc.',
-                placeholderContact: 'https://wa.me/52...',
+                placeholderContact: 'Link (wa.me/…) or phone number',
                 navAria: 'Navigation',
                 publishBtnTitle: 'Publish',
                 sellBtn: 'Sell'
@@ -802,6 +935,24 @@
 
         const STORAGE_MY_LISTINGS = 'metro_my_listings';
         const STORAGE_FAVORITES = 'metro_favorites';
+        const STORAGE_BROKEN_IMAGES = 'metro_broken_product_ids';
+
+        function getBrokenProductIds() {
+            try {
+                var raw = localStorage.getItem(STORAGE_BROKEN_IMAGES) || '[]';
+                return new Set(JSON.parse(raw).map(function(x) { return Number(x); }).filter(function(n) { return !isNaN(n); }));
+            } catch (e) { return new Set(); }
+        }
+        function addBrokenProductId(id) {
+            var n = Number(id);
+            if (isNaN(n)) return;
+            var set = getBrokenProductIds();
+            set.add(n);
+            try { localStorage.setItem(STORAGE_BROKEN_IMAGES, JSON.stringify(Array.from(set))); } catch (e) {}
+        }
+        function clearBrokenProductIds() {
+            try { localStorage.removeItem(STORAGE_BROKEN_IMAGES); } catch (e) {}
+        }
 
         function trackEvent(eventType, extra) {
             try {
@@ -937,9 +1088,100 @@
             return div.innerHTML;
         }
 
+        window.metroOnImageLoad = function(imgEl) {
+            if (!imgEl || !imgEl.nodeName || imgEl.nodeName.toLowerCase() !== 'img') return;
+            // 防止曾被 error 分支隐藏后又成功加载的边缘情况
+            imgEl.style.display = '';
+            var wrap = imgEl.closest && imgEl.closest('.product-image-wrap');
+            if (wrap) { wrap.classList.add('img-loaded'); wrap.classList.remove('img-failed'); }
+            var card = imgEl.closest && imgEl.closest('.product-card');
+            if (card) card.classList.remove('broken-hidden');
+        };
+
+        window.metroOnImageError = function(imgEl) {
+            if (!imgEl || !imgEl.nodeName || imgEl.nodeName.toLowerCase() !== 'img') return;
+            var full = (imgEl.getAttribute && imgEl.getAttribute('data-full')) || '';
+            if (imgEl.dataset.retry !== '1') {
+                imgEl.dataset.retry = '1';
+                if (full && full !== imgEl.src) { imgEl.onerror = null; imgEl.src = full; return; }
+            }
+            imgEl.style.display = 'none';
+            var wrap = imgEl.closest && imgEl.closest('.product-image-wrap');
+            if (wrap) wrap.classList.add('img-failed');
+            var card = imgEl.closest && imgEl.closest('.product-card');
+            if (card) {
+                card.classList.add('broken-hidden');
+                var id = card.getAttribute && card.getAttribute('data-product-id');
+                if (id) addBrokenProductId(id);
+                showRestoreHiddenIfNeeded();
+            }
+        };
+
+        function showRestoreHiddenIfNeeded() {
+            var grid = document.getElementById('productsGrid');
+            var restoreEl = document.getElementById('emptyStateRestore');
+            if (!grid || !restoreEl) return;
+            var hasHidden = grid.querySelectorAll('.product-card.broken-hidden').length > 0;
+            restoreEl.style.display = hasHidden ? 'block' : 'none';
+        }
+
+        function applyBrokenVisibility(container) {
+            if (!container) return;
+            var brokenIds = getBrokenProductIds();
+            container.querySelectorAll('.product-card').forEach(function(card) {
+                var id = card.getAttribute && card.getAttribute('data-product-id');
+                if (id && brokenIds.has(parseInt(id, 10))) {
+                    card.classList.add('broken-hidden');
+                } else {
+                    card.classList.remove('broken-hidden');
+                }
+            });
+            showRestoreHiddenIfNeeded();
+        }
+
+        function attachImageFailHide(container) {
+            if (!container) return;
+            container.querySelectorAll('.product-image').forEach(function(img) {
+                img.addEventListener('load', function() { window.metroOnImageLoad(this); });
+                img.addEventListener('error', function() { window.metroOnImageError(this); });
+            });
+        }
+
+        function normalizeContactHref(s) {
+            s = (s || '').trim();
+            if (!s) return '#';
+            if (/^https?:\/\//i.test(s)) return s;
+            var digits = s.replace(/\D/g, '');
+            if (digits.length >= 8 && digits.length <= 15) return 'https://wa.me/' + digits;
+            return s;
+        }
+
         function formatPrice(price) {
             if (!price || price === '0') return t('priceFree');
             return t('priceLabel') + price;
+        }
+
+        function shareProduct(p) {
+            var url = window.location.origin + window.location.pathname + '?id=' + (p.id || '');
+            var title = (p.title || '').trim() || 'Producto';
+            var text = title + ' – ' + formatPrice(p.price);
+            if (p.description && p.description.trim()) text += '\n' + (p.description.trim().substring(0, 80) + (p.description.length > 80 ? '…' : ''));
+            text += '\n' + url;
+            if (navigator.share) {
+                navigator.share({ title: title, text: text, url: url }).then(function() {
+                    trackEvent('share', { product_id: p.id });
+                }).catch(function() {});
+            } else {
+                try {
+                    navigator.clipboard.writeText(url);
+                    var toast = document.createElement('div');
+                    toast.textContent = t('shareCopied');
+                    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2C1810;color:#FFF;padding:10px 20px;border-radius:10px;font-size:14px;z-index:9999;';
+                    document.body.appendChild(toast);
+                    setTimeout(function() { toast.remove(); }, 2000);
+                } catch (e) {}
+                trackEvent('share', { product_id: p.id });
+            }
         }
 
         function renderProducts(products) {
@@ -964,9 +1206,10 @@
                 const imgUrl = (p.image && p.image.trim()) || '';
                 const thumbUrl = imgUrl ? getThumbUrl(imgUrl) : '';
                 const img = imgUrl
-                    ? `<img class="product-image" src="${escapeHtml(thumbUrl)}" data-full="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.getAttribute('data-full')">`
+                    ? `<div class="product-image-placeholder">🚇</div><img class="product-image" src="${escapeHtml(thumbUrl)}" data-full="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy" decoding="async" onload="window.metroOnImageLoad(this)" onerror="window.metroOnImageError(this)">`
                     : '<div class="product-image-placeholder">🚇</div>';
                 const contactLink = (p.contact_link && p.contact_link.trim()) || p.contact_link_2 || '#';
+                const contactHref = normalizeContactHref(contactLink);
                 const title = escapeHtml(p.title || '');
                 const desc = escapeHtml((p.description || '').trim());
                 const isFav = favIds.has(p.id);
@@ -982,11 +1225,23 @@
                             </div>
                             <h2 class="product-title">${title}</h2>
                             ${desc ? `<p class="product-desc">${desc}</p>` : ''}
-                            <a class="contact-btn" href="${escapeHtml(contactLink)}" target="_blank" rel="noopener noreferrer">${t('contactMe')}</a>
+                            <div class="product-actions">
+                                <a class="contact-btn" href="${escapeHtml(contactHref)}" target="_blank" rel="noopener noreferrer">${t('contactMe')}</a>
+                                <button type="button" class="share-btn" data-id="${p.id}" aria-label="${escapeHtml(t('shareBtn'))}">${escapeHtml(t('shareBtn'))}</button>
+                                <button type="button" class="report-btn" data-id="${p.id}" aria-label="${escapeHtml(t('reportBtn'))}">${escapeHtml(t('reportBtn'))}</button>
+                            </div>
                         </div>
                     </article>
                 `;
             }).join('');
+            grid.querySelectorAll('.share-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = parseInt(this.getAttribute('data-id'), 10);
+                    const p = products.find(x => x.id === id);
+                    if (p) shareProduct(p);
+                });
+            });
             grid.querySelectorAll('.heart-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1007,13 +1262,26 @@
                     if (card) trackEvent('metro_contact_click', { product_id: parseInt(card.getAttribute('data-product-id'), 10) });
                 });
             });
+            grid.querySelectorAll('.report-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault(); e.stopPropagation();
+                    var id = parseInt(this.getAttribute('data-id'), 10);
+                    if (!id) return;
+                    fetch('/api/report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product_id: id, reason: '' }) })
+                        .then(function(r) { return r.json(); })
+                        .then(function(d) { showToast(d.success ? t('reportSent') : (d.error || 'Error')); })
+                        .catch(function() { showToast('Error'); });
+                });
+            });
             grid.querySelectorAll('.product-card').forEach(card => {
                 card.addEventListener('click', function(e) {
-                    if (e.target.closest('.heart-btn') || e.target.closest('.contact-btn')) return;
+                    if (e.target.closest('.heart-btn') || e.target.closest('.contact-btn') || e.target.closest('.share-btn') || e.target.closest('.report-btn')) return;
                     var id = parseInt(this.getAttribute('data-product-id'), 10);
                     if (id) trackEvent('metro_product_click', { product_id: id });
                 });
             });
+            attachImageFailHide(grid);
+            applyBrokenVisibility(grid);
         }
 
         function getThumbUrl(url) {
@@ -1024,9 +1292,10 @@
             const imgUrl = (p.image && p.image.trim()) || '';
             const thumbUrl = imgUrl ? getThumbUrl(imgUrl) : '';
             const img = imgUrl
-                ? `<img class="product-image" src="${escapeHtml(thumbUrl)}" data-full="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.getAttribute('data-full')">`
+                ? `<div class="product-image-placeholder">🚇</div><img class="product-image" src="${escapeHtml(thumbUrl)}" data-full="${escapeHtml(imgUrl)}" alt="${escapeHtml(p.title)}" loading="lazy" decoding="async" onload="window.metroOnImageLoad(this)" onerror="window.metroOnImageError(this)">`
                 : '<div class="product-image-placeholder">🚇</div>';
             const contactLink = (p.contact_link && p.contact_link.trim()) || p.contact_link_2 || '#';
+            const contactHref = normalizeContactHref(contactLink);
             const title = escapeHtml(p.title || '');
             const desc = escapeHtml((p.description || '').trim());
             const heartBtn = showHeart
@@ -1042,7 +1311,11 @@
                         ${bodyTop}
                         <h2 class="product-title">${title}</h2>
                         ${desc ? `<p class="product-desc">${desc}</p>` : ''}
-                        <a class="contact-btn" href="${escapeHtml(contactLink)}" target="_blank" rel="noopener noreferrer">${t('contactMe')}</a>
+                        <div class="product-actions">
+                            <a class="contact-btn" href="${escapeHtml(contactHref)}" target="_blank" rel="noopener noreferrer">${t('contactMe')}</a>
+                            <button type="button" class="share-btn" data-id="${p.id}" aria-label="${escapeHtml(t('shareBtn'))}">${escapeHtml(t('shareBtn'))}</button>
+                            <button type="button" class="report-btn" data-id="${p.id}" aria-label="${escapeHtml(t('reportBtn'))}">${escapeHtml(t('reportBtn'))}</button>
+                        </div>
                     </div>
                 </article>
             `;
@@ -1078,6 +1351,30 @@
                     renderMyPageContent();
                 });
             });
+            [document.getElementById('myListingsGrid'), document.getElementById('myFavoritesGrid')].forEach(function(grid) {
+                grid.querySelectorAll('.share-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        var id = parseInt(this.getAttribute('data-id'), 10);
+                        var products = grid.id === 'myListingsGrid' ? listings : favorites;
+                        var p = products.find(function(x) { return x.id === id; });
+                        if (p) shareProduct(p);
+                    });
+                });
+                grid.querySelectorAll('.report-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault(); e.stopPropagation();
+                        var id = parseInt(btn.getAttribute('data-id'), 10);
+                        if (!id) return;
+                        fetch('/api/report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product_id: id, reason: '' }) })
+                            .then(function(r) { return r.json(); })
+                            .then(function(d) { showToast(d.success ? t('reportSent') : (d.error || 'Error')); })
+                            .catch(function() { showToast('Error'); });
+                    });
+                });
+                attachImageFailHide(grid);
+                applyBrokenVisibility(grid);
+            });
         }
 
         async function fetchAndRender(metro) {
@@ -1090,16 +1387,27 @@
             loading.textContent = t('loading');
 
             try {
-                const res = await fetch('/api/products?metro=' + encodeURIComponent(metro));
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000);
+                const res = await fetch('/api/products?metro=' + encodeURIComponent(metro), { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!res.ok) {
+                    throw new Error('HTTP ' + res.status);
+                }
                 const data = await res.json();
                 const products = data.products || [];
                 lastProducts = products;
+                document.getElementById('emptyStateRestore').style.display = 'none';
+                document.getElementById('emptyStateText').setAttribute('data-i18n', 'empty');
+                document.getElementById('emptyStateText').textContent = t('empty');
                 renderProducts(products);
             } catch (e) {
                 console.error(e);
-                document.getElementById('emptyState').querySelector('p').textContent = 'Error al cargar.';
-                document.getElementById('emptyState').style.display = 'block';
+                const emptyEl = document.getElementById('emptyState');
+                emptyEl.querySelector('p').textContent = e.name === 'AbortError' ? 'Tardó demasiado. Reintenta.' : 'Error al cargar.';
+                emptyEl.style.display = 'block';
                 loading.style.display = 'none';
+                document.getElementById('productsGrid').style.display = 'none';
             }
         }
 
@@ -1107,6 +1415,26 @@
         document.getElementById('langEn').addEventListener('click', () => setLang('en'));
         document.getElementById('langEsMy').addEventListener('click', () => setLang('es'));
         document.getElementById('langEnMy').addEventListener('click', () => setLang('en'));
+        var btnRestoreHidden = document.getElementById('btnRestoreHidden');
+        if (btnRestoreHidden) btnRestoreHidden.addEventListener('click', function() {
+            clearBrokenProductIds();
+            fetchAndRender(currentMetro || 'all');
+        });
+
+        (function setupHourlyBrokenImageCheck() {
+            if (window._metroHourlyBrokenScheduled) return;
+            window._metroHourlyBrokenScheduled = true;
+            setInterval(function() {
+                var g = document.getElementById('productsGrid');
+                if (g && g.querySelectorAll('.product-image').length) attachImageFailHide(g);
+            }, 60 * 60 * 1000);
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') {
+                    var g = document.getElementById('productsGrid');
+                    if (g) attachImageFailHide(g);
+                }
+            });
+        })();
 
         function openModal() {
             const lines = METRO_LINES.filter(l => l !== 'all');
@@ -1190,16 +1518,35 @@
             setTimeout(() => { el.style.display = 'none'; }, 2800);
         }
 
+        function isFakePrice(val) {
+            const p = String(val).trim().toLowerCase();
+            if (!p || p === '0' || p === '1' || p === '2' || p === 'free' || p === 'gratis') return true;
+            const n = parseFloat(p.replace(',', '.'));
+            if (!isNaN(n) && n >= 0 && n <= 2) return true;
+            return false;
+        }
         document.getElementById('publishForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const title = document.getElementById('pTitle').value.trim();
             const description = document.getElementById('pDesc').value.trim();
-            const price = (document.getElementById('pPrice').value.trim() || '0').replace(/\D/g, '') || '0';
+            const priceRaw = document.getElementById('pPrice').value.trim();
+            const price = (priceRaw || '0').replace(/\D/g, '') || priceRaw || '0';
+            if (isFakePrice(priceRaw || price)) {
+                showToast(t('priceWarning'));
+                return;
+            }
             const contact = document.getElementById('pContact').value.trim();
             const metroNodes = document.querySelectorAll('#metroCheckboxes input[name=metro]:checked');
             const metro_lines = Array.from(metroNodes).map(n => n.value);
             if (!title || !contact) {
                 showToast(t('publishError'));
+                return;
+            }
+            var digits = contact.replace(/\D/g, '');
+            var isUrl = /^https?:\/\//i.test(contact);
+            var isPhone = digits.length >= 8 && digits.length <= 15;
+            if (!isUrl && !isPhone) {
+                showToast(t('contactInvalid'));
                 return;
             }
             if (!metro_lines.length) {
